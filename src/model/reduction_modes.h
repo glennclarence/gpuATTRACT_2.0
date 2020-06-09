@@ -10,6 +10,7 @@
 
 #include "Types_6D_Modes.h"
 #include "reduction.h"
+#include "DeviceProtein.h"
 
 namespace as {
 
