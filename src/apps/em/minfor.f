@@ -1,6 +1,6 @@
       subroutine minfor(
-     1 smug, ivmax, x
-     2 )
+     1 smug, ivmax, x,
+     2 numModesRec, numModesLig)
 c
 c  variable metric minimizer (Harwell subroutine lib.  as in Jumna with modifications)
 c     minimizes a single structure
@@ -14,7 +14,8 @@ c     Parameters
       integer ivmax
       real*8 x
       dimension x(6)
-
+      
+      integer numModesRec, numModesLig
 c     Local variables
       real*8  gesa
       integer i,k,ir,isfv,itr,nfun,np,jn
