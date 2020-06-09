@@ -65,8 +65,8 @@ CXXFLAGS =  $(OFLAGS) -std=c++11 -fmessage-length=0
 LDFLAGS =  #-L...
 LIBS =  -lpthread -lrt $(LIBS_TEST) -lboost_program_options -lgfortran -lboost_coroutine -lboost_context -lboost_system
 
-INCLUDES += -I/boost/include
-LDFLAGS += -L/boost/li
+INCLUDES += -Iboost/include
+LDFLAGS += -Lboost/lib
 
 
 ifeq ($(CUDA), ON)
