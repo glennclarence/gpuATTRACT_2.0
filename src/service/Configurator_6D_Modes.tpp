@@ -115,10 +115,10 @@ void Configurator_6D_Modes<SERVICE>::init(CmdArgs const& args) {
 
 
 
-	receptor->setNumModes(args.numModes);
-	ligand->setNumModes(args.numModes);
-	Common_Modes::numModesLig = args.numModes;
-	Common_Modes::numModesRec = args.numModes;
+	receptor->setNumModes(args.numModesRec);
+	ligand->setNumModes(args.numModesLig);
+	Common_Modes::numModesLig = args.numModesLig;
+	Common_Modes::numModesRec = args.numModesRec;
 
 	readHMMode<real_t>(receptor, args.recModesName);
 	readHMMode<real_t>(ligand, args.ligModesName);

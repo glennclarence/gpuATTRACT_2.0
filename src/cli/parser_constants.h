@@ -41,6 +41,7 @@ constexpr auto SIM_DEFAULT_DIELEC = "variable";
 constexpr auto SIM_ALLOWED_DIELEC = {"variable", "constant"};
 constexpr auto SIM_DEFAULT_EPSILON = 15.0;
 constexpr int  DEFAULT_NUM_MODES = 0;
+constexpr double SIM_DEFAULT_MODE_STIFFNESS = 1.0;
 
 /**
  * Server context

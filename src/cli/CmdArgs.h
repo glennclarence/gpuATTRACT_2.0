@@ -31,7 +31,6 @@ public:
 	std::string ligModesName;
  
 	/* Concurrency */
-  int numModes;
 	int numCPUs;
 	std::vector<int> deviceIds;
 	int chunkSize;
@@ -40,6 +39,9 @@ public:
 	std::string precision;
 	std::string dielec;
 	double epsilon;
+	double mode_stiffness;
+    int numModesRec;
+    int numModesLig;
 
 	/* Minimization */
 	std::string solver;
