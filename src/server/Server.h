@@ -75,9 +75,9 @@ public:
 		return _itemSize;
 	}
 
-	void submit(request_t& req);
+	void submit(std::shared_ptr<request_t>& req);
 
-	void wait(request_t const& req, result_t* result);
+	void wait(std::shared_ptr<request_t> const& req, result_t* result);
 
 private:
 

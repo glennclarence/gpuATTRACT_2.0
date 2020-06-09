@@ -51,7 +51,7 @@ public:
 
 
 private:
-	std::map<std::shared_ptr<request_t> const&, requestMembers_t> _requestContainer;
+	std::map<std::shared_ptr<request_t> const, requestMembers_t> _requestContainer;
 
 };
 

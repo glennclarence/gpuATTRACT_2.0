@@ -92,25 +92,25 @@ void Server<GenericTypes>::setItemSize(size_t itemSize) {
 }
 
 template<typename GenericTypes>
-void Server<GenericTypes>::submit(request_t& request) {
+void Server<GenericTypes>::submit(std::shared_ptr<request_t>& request) {
 
 	/* Client */
 	{
-		if (_requestMng->isValid(&request)) {
+		if (_requestMng->isValid(request)) {
 			throw std::invalid_argument("Request has already been submitted.");
-		} else if (request.data() == nullptr) {
+		} else if (request->data() == nullptr) {
 			throw std::invalid_argument("Invalid input buffer (nullptr).");
 		}
 
-		_requestMng->registerRequest(&request);
+		_requestMng->registerRequest(request);
 
-		if(request.size() > 0) {
-			attachServerBuffers(&request);
-			copyRequestBuffer(&request);
-			createWorkItemsAndPush(&request);
+		if(request->size() > 0) {
+			attachServerBuffers(request);
+			copyRequestBuffer(request);
+			createWorkItemsAndPush(request);
 		}
 
-		request.reset();
+		request->reset();
 	}
 
 }
@@ -146,23 +146,23 @@ void Server<GenericTypes>::createWorkItemsAndPush(std::shared_ptr<request_t> con
 
 
 template<typename GenericTypes>
-void Server<GenericTypes>::wait(request_t const& request, result_t* clientBuffer)
+void Server<GenericTypes>::wait(std::shared_ptr<request_t> const& request, result_t* clientBuffer)
 {
-	if (!_requestMng->isValid(&request) || clientBuffer == nullptr) {
+	if (!_requestMng->isValid(request) || clientBuffer == nullptr) {
 		throw std::invalid_argument("Either request has not been submitted or clientBuffer invalid (nullptr).");
 	}
 
 	try {
-		synchronizeWith(&request);
+		synchronizeWith(request);
 	} catch (std::exception& e) {
-		returnServerBuffers(&request);
-		_requestMng->removeRequest(&request);
+		returnServerBuffers(request);
+		_requestMng->removeRequest(request);
 		throw;
 	}
 
-	copyResultBuffer(&request, clientBuffer);
-	returnServerBuffers(&request);
-	_requestMng->removeRequest(&request);
+	copyResultBuffer(request, clientBuffer);
+	returnServerBuffers(request);
+	_requestMng->removeRequest(request);
 }
 
 template<typename GenericTypes>
