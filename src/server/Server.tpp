@@ -116,7 +116,7 @@ void Server<GenericTypes>::submit(request_t& request) {
 }
 
 template<typename GenericTypes>
-void Server<GenericTypes>::attachServerBuffers(request_t const* request) {
+void Server<GenericTypes>::attachServerBuffers(std::shared_ptr<request_t> const& request) {
 	ServerBuffers<input_t, result_t>* buffers = _requestMng->buffers(request);
 	auto& bufferSize = buffers->size;
 	buffers->inputBuffer = _bufferMng->getInputBuffer(bufferSize);
@@ -124,7 +124,7 @@ void Server<GenericTypes>::attachServerBuffers(request_t const* request) {
 }
 
 template<typename GenericTypes>
-void Server<GenericTypes>::copyRequestBuffer(request_t const* request) {
+void Server<GenericTypes>::copyRequestBuffer(std::shared_ptr<request_t> const& request) {
 	ServerBuffers<input_t, result_t>* buffers = _requestMng->buffers(request);
 	const auto& bufferSize = buffers->size;
 	assert(bufferSize == request->size());
@@ -134,7 +134,7 @@ void Server<GenericTypes>::copyRequestBuffer(request_t const* request) {
 }
 
 template<typename GenericTypes>
-void Server<GenericTypes>::createWorkItemsAndPush(request_t const* request) {
+void Server<GenericTypes>::createWorkItemsAndPush(std::shared_ptr<request_t> const& request) {
 	ServerBuffers<input_t, result_t> const* buffers = _requestMng->buffers(request);
 	auto const& requestSize = buffers->size;
 	common_t* common = _requestMng->common(request);
@@ -166,7 +166,7 @@ void Server<GenericTypes>::wait(request_t const& request, result_t* clientBuffer
 }
 
 template<typename GenericTypes>
-void Server<GenericTypes>::synchronizeWith(request_t const* request) {
+void Server<GenericTypes>::synchronizeWith(std::shared_ptr<request_t> const& request) {
 	unsigned count = 0;
 	bool processed;
 	while (!(processed = _requestMng->isProcessed(request)) && count < _waitTime) {
@@ -180,7 +180,7 @@ void Server<GenericTypes>::synchronizeWith(request_t const* request) {
 }
 
 template<typename GenericTypes>
-void Server<GenericTypes>::returnServerBuffers(request_t const* request) {
+void Server<GenericTypes>::returnServerBuffers(std::shared_ptr<request_t> const& request) {
 	ServerBuffers<input_t, result_t> const* buffers = _requestMng->buffers(request);
 	auto const& size = buffers->size;
 	if (size > 0) {
@@ -190,7 +190,7 @@ void Server<GenericTypes>::returnServerBuffers(request_t const* request) {
 }
 
 template<typename GenericTypes>
-void Server<GenericTypes>::copyResultBuffer(request_t const* request, result_t* clientBuffer) {
+void Server<GenericTypes>::copyResultBuffer(std::shared_ptr<request_t> const& request, result_t* clientBuffer) {
 	ServerBuffers<input_t, result_t> const* buffers = _requestMng->buffers(request);
 	auto const& size = buffers->size;
 	if (size > 0) {
