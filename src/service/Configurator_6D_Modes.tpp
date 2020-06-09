@@ -123,6 +123,9 @@ void Configurator_6D_Modes<SERVICE>::init(CmdArgs const& args) {
 	readHMMode<real_t>(receptor, args.recModesName);
 	readHMMode<real_t>(ligand, args.ligModesName);
 
+    receptor->scaleModeStiffness(args.mode_stiffness);
+	ligand->scaleModeStiffness(args.mode_stiffness);
+
 	auto mapVecLig = readGridAlphabetFromFile(args.alphabetLigName); // map: std::vector<unsigned>
 	TypeMap typeMapLig = createTypeMapFromVector(mapVecLig);
 	receptor->setNumMappedTypes(1);
