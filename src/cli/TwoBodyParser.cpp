@@ -54,10 +54,12 @@ void TwoBodyParser::addOptions() noexcept {
 	_optsDesc.add(concurrency);
 	po::options_description sim("simulation");
 	sim.add_options()
-      ("numModes", po::value<int>()->default_value(DEFAULT_NUM_MODES), "number of modes")
-			("dielec", po::value<string>()->default_value(SIM_DEFAULT_DIELEC),
-					descriptionWithOptions("dielectric behavior", SIM_ALLOWED_DIELEC).c_str())
-			("epsilon", po::value<double>()->default_value(SIM_DEFAULT_EPSILON), "dielectric constant");
+		("numModesRec", po::value<int>()->default_value(DEFAULT_NUM_MODES), "number of modes of the receptor")
+		("numModesLig", po::value<int>()->default_value(DEFAULT_NUM_MODES), "number of modes of the ligand")
+		("dielec", po::value<string>()->default_value(SIM_DEFAULT_DIELEC),
+			descriptionWithOptions("dielectric behavior", SIM_ALLOWED_DIELEC).c_str())
+        ("mode_stiffness", po::value<double>()->default_value(SIM_DEFAULT_MODE_STIFFNESS), "scales the eigenvalues of the modes. Default is 1.0.")
+		("epsilon", po::value<double>()->default_value(SIM_DEFAULT_EPSILON), "dielectric constant");
 	_optsDesc.add(sim);
 
 }
@@ -96,10 +98,10 @@ void TwoBodyParser::assignArgs(po::variables_map const& vm) noexcept {
 		_args->alphabetRecName = vm["alphabetrec"].as<string>();
 	if(vm.count("alphabetlig"))
 		_args->alphabetLigName = vm["alphabetlig"].as<string>();
-	if(vm.count("modr"))
-		_args->recModesName = vm["modr"].as<string>();
-	if(vm.count("modl"))
-		_args->ligModesName = vm["modl"].as<string>();
+	if(vm.count("modesr"))
+		_args->recModesName = vm["modesr"].as<string>();
+	if(vm.count("modesl"))
+		_args->ligModesName = vm["modesl"].as<string>();
 	if(vm.count("numCPUs"))
 		_args->numCPUs = vm["numCPUs"].as<int>();
 	if(vm.count("device"))
@@ -112,8 +114,8 @@ void TwoBodyParser::assignArgs(po::variables_map const& vm) noexcept {
 		_args->dielec = vm["dielec"].as<string>();
 	if(vm.count("epsilon"))
 		_args->epsilon = vm["epsilon"].as<double>();
-	if(vm.count("numModes"))
-		_args->numModes = vm["numModes"].as<int>();
+	if(vm.count("mode_stiffness"))
+		_args->mode_stiffness = vm["mode_stiffness"].as<double>();
 
 }
 
