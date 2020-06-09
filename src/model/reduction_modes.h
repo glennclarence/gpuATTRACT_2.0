@@ -195,7 +195,7 @@ void h_finalReduce(
 					enGrad.modesLig
 					);
 
-
+				//std::cout << "lig "<<enGrad._6D.E<< " "<< getModeEngergy(protein->modeForce,protein->numModes,dof.modesLig)<<" ";
 				enGrad._6D.E += getModeEngergy(protein->modeForce,
 					protein->numModes,
 					dof.modesLig
@@ -211,6 +211,7 @@ void h_finalReduce(
 					dof.modesRec,
 					enGrad.modesRec
 					);
+				//std::cout << "rec "<<enGrad._6D.E<< " "<< getModeEngergy(protein->modeForce,protein->numModes,dof.modesRec)<<" ";
 
 				enGrad._6D.E += getModeEngergy(protein->modeForce,
 					protein->numModes,
@@ -219,6 +220,8 @@ void h_finalReduce(
 			}
 
 		}
+		//std::cout << "energy "<<enGrad._6D.E<<std::endl;
+
 
 	}
 }

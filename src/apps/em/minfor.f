@@ -1,6 +1,7 @@
       subroutine minfor(
-     1 smug, ivmax,minTrans,minRot,minMode, numModesRec, numModesLig, x
-     2 )
+     1 smug, ivmax,minTrans,minRot,minMode,mode_thresh,
+     2 use_mode_thresh,numModesRec, numModesLig, x)
+
 c
 c  variable metric minimizer (Harwell subroutine lib.  as in Jumna with modifications)
 c     minimizes a single structure
@@ -14,7 +15,7 @@ c     Parameters
       integer ivmax
       real*8 x
       dimension x(46)
-      integer numModesRec, numModesLig
+      integer numModesRec, numModesLig,use_mode_thresh
 c     Local variables
       real*8  gesa
       integer i,k,ir,isfv,itr,nfun,np,jn,j6,offset
@@ -23,7 +24,7 @@ c     Local variables
       
       real*8 xtmp,gtmp,gbtmp
       dimension xtmp(46),gtmp(46),gbtmp(46)
-
+      real*8 mode_thresh
       real*8 h,g,ga,gb,xaa,xbb,d,step,stepbd,steplb,stmin
       dimension h(46*46)
       dimension g(46),ga(46),gb(46),w(46)
@@ -32,9 +33,10 @@ c     Local variables
 
 c chagne
       integer minTrans, minRot, minMode
-      real*8 numDofModes, numDofTrans, numDofRot
+      integer*8 numDofModes, numDofTrans, numDofRot
 
       integer, parameter:: ERROR_UNIT = 0
+
 
 
 
@@ -44,7 +46,7 @@ c choose what dofs to minimze
 c      minTrans = 1
 c      minRot = 1
 c      minMode = 1
-      write(*,*),minTrans,minRot,minMode, numModesRec, numModesLig
+c      write(*,*),minTrans,minRot,minMode, numModesRec, numModesLig
       numDofModes = 0
       numDofTrans = 0
       numDofRot = 0
@@ -81,7 +83,7 @@ c      minMode = 1
 c       write(ERROR_UNIT,*)'xaa',i,xaa(i)
       enddo
 
-      write(*,*), j6, jn, offset
+c      write(*,*), j6, jn, offset
 
       nfun=0
       itr=0
@@ -157,7 +159,19 @@ c     make an Euler rotation + tranlation of ligand center
       enddo
       do i=j6+1,jn
        xbb(i)=xaa(i)-c*d(i)
+        if (use_mode_thresh.eq.1) then
+            if (xbb(i).gt.mode_thresh) then
+                xbb(i) = mode_thresh
+            endif
+            if (xbb(i).lt.-mode_thresh) then
+             write(*,*), "less",xbb(i),-mode_thresh
+                xbb(i) = -mode_thresh
+            endif
+        endif
       enddo
+
+
+
       do i = 1, jn
       xtmp(i+offset) = xbb(i)
       enddo

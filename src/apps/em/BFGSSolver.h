@@ -72,6 +72,7 @@ public:
 
 	BFGSSolver(BFGSSolver &&) = default;
 	BFGSSolver& operator= (BFGSSolver&& ) = default;
+	void setSettings(int trackStates, int trackGrads, int minimizeModesOnly, float mode_thresh) override {};
 
 	/* types */
 	typedef enum linesearch {

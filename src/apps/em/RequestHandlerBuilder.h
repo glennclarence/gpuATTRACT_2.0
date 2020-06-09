@@ -22,7 +22,10 @@ private:
 	std::vector<extDOF> const* _dofs;
 	common_t _common;
 	std::string _solverName;
-
+	int _minmodesonly;
+	int _trackGradients;
+    int _trackStates;
+    float _mode_thresh;
 public:
 	Builder& withServer(std::shared_ptr<extServer> server) noexcept {
 		_server = server;
@@ -59,11 +62,21 @@ public:
 		return *this;
 	}
 
-
+	Builder& withSolverSettings(int  trackStates, int  trackGradients, int  minmodesonly, float mode_thresh) noexcept {
+			_minmodesonly 	= minmodesonly;
+			_trackGradients = trackGradients;
+			_trackStates 	= trackStates;
+			_mode_thresh = mode_thresh;
+			return *this;
+		}
 	RequestHandler build() noexcept {
 		return RequestHandler(_server, _numConcurrentObjects,
 				_numChunks, _minChunkSize,
-				*_dofs, _common, _solverName);
+				*_dofs, _common, _solverName,
+				_trackStates,
+				_trackGradients,
+				_minmodesonly,
+				_mode_thresh);
 	}
 
 };

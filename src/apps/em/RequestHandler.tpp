@@ -27,13 +27,23 @@ RequestHandler<GenericTypes>::RequestHandler(std::shared_ptr<extServer> server,
 			unsigned minChunkSize,
 			std::vector<extDOF> const& dofs,
 			common_t const& common,
-			std::string const& solverName) :
+			std::string const& solverName,
+			int trackStates,
+			int trackGradients,
+			int minmodesonly,
+			float mode_thresh
+
+) :
 		_server(server),
 		_numConcurrentObjects(numConcurrentObjects),
 		_numChunks(numChunks),
 		_minChunkSize(minChunkSize),
 		_numObjects(0),
-		_common(common)
+		_common(common),
+		_trackStates(trackStates),
+		_trackGradients(trackGradients),
+		_minmodesonly(minmodesonly),
+		_mode_thresh(mode_thresh)
 {
 	init(solverName, dofs);
 }
@@ -46,7 +56,7 @@ void RequestHandler<GenericTypes>::init(std::string const& solverName, std::vect
 	for (unsigned i = 0; i < dofs.size(); ++i) {
 		SharedSolver solver;
 		solver = factory->createSolverByName(solverName);
-
+		solver->setSettings(_trackStates, _trackGradients, _minmodesonly, _mode_thresh);
 		solver->setState(dofs[i]);
 		_objects.emplace_hint(_objects.end(), i, solver);
 	}
@@ -265,9 +275,19 @@ auto RequestHandler<GenericTypes>::getResultStateTracker() noexcept -> std::vect
 	std::vector<std::shared_ptr<std::vector<std::vector<float>>>> enGradVec(_finishedObjects.size());
 	for (unsigned i = 0; i < _finishedObjects.size(); ++i) {
 		enGradVec[i] = _finishedObjects[i]->getStateTracker();
-		std::cout << "size in req handler " <<  _finishedObjects[i]->getStateTracker()->size()<< std::endl;
+		//std::cout << "size in req handler " <<  _finishedObjects[i]->getStateTracker()->size()<< std::endl;
 	}
 	return enGradVec;
+}
+
+template<typename GenericTypes>
+auto RequestHandler<GenericTypes>::getTrack() noexcept -> std::vector<std::shared_ptr<std::vector<Track>>> {
+	std::vector<std::shared_ptr<std::vector<Track>>> tracks(_finishedObjects.size());
+	for (unsigned i = 0; i < _finishedObjects.size(); ++i) {
+		tracks[i] = _finishedObjects[i]->getTrack();
+		//std::cout << "size in req handler " <<  _finishedObjects[i]->getStateTracker()->size()<< std::endl;
+	}
+	return tracks;
 }
 
 template<typename GenericTypes>

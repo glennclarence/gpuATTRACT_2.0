@@ -50,6 +50,7 @@ class LBFGS_B_Solver : public SolverBase {
 public:
 	LBFGS_B_Solver() : SolverBase() {}
 	virtual ~LBFGS_B_Solver() {};
+	void setSettings(int trackStates, int trackGrads, int minimizeModesOnly, float mode_thresh)override {};
 
 	LBFGS_B_Solver(const LBFGS_B_Solver& ) = delete;
 	LBFGS_B_Solver& operator= (const LBFGS_B_Solver& ) = delete;

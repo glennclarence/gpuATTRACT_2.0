@@ -10,7 +10,7 @@ CURDIR = $(realpath $(PWD) )
 
 ifeq ($(TARGET), RELEASE)
 	OBJDIR = build_RELEASE
-	NAME = AttractServer_RELEASE1
+	NAME = AttractServer_RELEASE4
 endif
 ifeq ($(TARGET), DEBUG)
 	OBJDIR = build_DEBUG
@@ -61,7 +61,7 @@ OBJECTS_CPP = $(addprefix $(OBJDIR)/, $(notdir $(SOURCES_CPP:.cpp=.o)))
 # AttractServer 
 CXX = g++
 ifeq ($(TARGET), RELEASE)
-	OFLAGS = -O3 -DNDEBUG
+	OFLAGS = -O3 -DNDEBUG -w -lm
 	FXX_OFLAGS = -O2 
 else ifeq ($(TARGET), DEBUG) 
 	OFLAGS = -O0 -g -Wall -Wextra -DDEBUG
@@ -73,7 +73,8 @@ endif
 
 CXXFLAGS =  $(OFLAGS) -std=c++11 -fmessage-length=0
 #INCLUDES = -I$(CURDIR)/src -I$(CURDIR)/src/fileIO 
-LDFLAGS =  #-L...
+INCLUDES+= -Iboost/include
+LDFLAGS+=  -Lboost/lib
 LIBS =  -lpthread -lrt $(LIBS_TEST) -lboost_program_options -lgfortran -lboost_coroutine -lboost_context -lboost_system
 
 # for testing with different boost lib versions. should be disabled by default.
@@ -97,9 +98,9 @@ endif
 
 
 # prepare nvcc settings
-CUDA_CXX = /usr/local/cuda/bin/nvcc
-ARCHFLAGS = -gencode arch=compute_30,code=sm_30 -gencode arch=compute_35,code=sm_35 -gencode arch=compute_50,code=sm_50
-ARCHFLAGS2 = -gencode arch=compute_30,code=compute_30 -gencode arch=compute_35,code=compute_35 -gencode arch=compute_50,code=compute_50
+CUDA_CXX = /usr/local/cuda/bin/nvcc -w 
+ARCHFLAGS = -gencode arch=compute_61,code=sm_61 
+ARCHFLAGS2 = -gencode arch=compute_61,code=compute_61 
 SOURCES_CU = $(shell find $(SOURCE_DIR) -name "*.cu")
 
 OBJECTS_CU = $(addprefix $(OBJDIR)/, $(notdir $(SOURCES_CU:.cu=_cu.o)))

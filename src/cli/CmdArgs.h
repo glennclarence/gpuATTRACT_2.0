@@ -49,6 +49,14 @@ public:
 	int maxConcurrency;
 	int numChunks;
 
+
+
+	int trackGradients	    ;
+	int trackStates	        ;
+	std::string trackFile	;
+	int minmodesonly		;
+	float mode_thresh		;
+
 	friend std::ostream& operator<<(std::ostream& s, CmdArgs const& args);
 };
 

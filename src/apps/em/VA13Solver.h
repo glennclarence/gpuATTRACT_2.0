@@ -22,7 +22,7 @@
 #define VA13SOLVER_H_
 
 #include "SolverBase.h"
-
+#include <iostream>
 namespace as {
 
 struct VA13Statistic : public Statistic {
@@ -46,6 +46,7 @@ struct VA13Statistic : public Statistic {
 	}
 };
 
+
 class VA13Solver : public SolverBase {
 public:
 	VA13Solver() : SolverBase() {}
@@ -60,6 +61,14 @@ public:
 	std::unique_ptr<Statistic> getStats() const override {
 		return std::unique_ptr<Statistic> (statistic.getCopy());
 	}
+	void setSettings(int trackStates, int trackGrads, int minimizeModesOnly, float mode_thresh) override {
+		settings.minimizeRotation = minimizeModesOnly > 0 ? 0 : 1;
+		settings.minimizeTranslation = minimizeModesOnly > 0 ? 0 : 1;
+		settings.trackStates = trackStates;
+		settings.trackGradients = trackGrads;
+		settings.mode_thresh = mode_thresh;
+		//std::cout << "in solver s "<<(int)trackStates<<" g " <<(int) settings.trackGradients<<" mmo " <<(int)minimizeModesOnly<<" " <<(int)settings.minimizeTranslation<< std::endl;
+	}
 
 	struct Options {
 		/* Solver Options */
@@ -67,21 +76,23 @@ public:
 		unsigned minimizeRotation = 1;  //switch on(1)/off(!1) minimization of rotational degrees of freedom
 		unsigned minimizeTranslation = 1; //switch on(1)/off(!1) minimization of translational degrees of freedom
 		unsigned minimizeModes = 1; //switch on(1)/off(!1) minimization of mode degrees of freedom
-		bool trackStates = true; //switch on/off tracking of states. which are appended to trackedStates
-		bool trackGradients = true; //switch on/off tracking of gradients. which are appended to trackedGrads
+		float mode_thresh = -1;
+		bool trackStates = false; //switch on/off tracking of states. which are appended to trackedStates
+		bool trackGradients = false; //switch on/off tracking of gradients. which are appended to trackedGrads
 	};
 
 	static void setOptions(Options opt) {settings = opt;}
 
 	class FortranSmuggler {
 	public:
-		FortranSmuggler (push_type& _coro, Vector& _state, ObjGrad& _objective,std::shared_ptr<std::vector<std::vector<float>>> _trackedStates,
-				std::shared_ptr<std::vector<std::vector<float>>> _trackedGrads,Options opt ):
+		//std::shared_ptr<std::vector<std::vector<float>>> _trackedStates,
+		//				std::shared_ptr<std::vector<std::vector<float>>> _trackedGrads
+		FortranSmuggler (push_type& _coro, Vector& _state, ObjGrad& _objective,std::shared_ptr<std::vector<Track>> _track,Options opt ):
 			coro(_coro),
 			state(_state),
 			objective(_objective),
-			trackedStates(_trackedStates),
-			trackedGrads(_trackedGrads),
+			track(_track),
+			//trackedGrads(_trackedGrads),
 			options(opt)
 		{}
 
@@ -89,6 +100,7 @@ public:
 		ObjGrad& objective_ref() { return objective; }
 		void push_state(std::vector<float> state) { trackedStates->push_back(state);}
 		void push_grad(std::vector<float> grad) { trackedGrads->push_back(grad); }
+		void push_track(Track record) { track->push_back(record); }
 		void call_coro() {
 			coro();
 		};
@@ -101,6 +113,7 @@ public:
 		Options options;
 		std::shared_ptr<std::vector<std::vector<float>>> trackedStates;
 		std::shared_ptr<std::vector<std::vector<float>>> trackedGrads;
+		std::shared_ptr<std::vector<Track>> track;
 	};
 
 

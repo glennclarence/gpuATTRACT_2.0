@@ -60,9 +60,17 @@ private:
 
 };
 
+struct Track{
+	std::vector<float> states;
+	std::vector<float> grads;
+	float energy;
+	Track(): energy(0){}
+};
+
+
 class SolverBase {
 public:
-	SolverBase() : coro(nullptr),trackedStates(std::make_shared<std::vector<std::vector<float>>>()) ,trackedGrads(std::make_shared<std::vector<std::vector<float>>>()){}
+	SolverBase() : coro(nullptr),track(std::make_shared<std::vector<Track>>()){} //trackedStates(std::make_shared<std::vector<std::vector<float>>>()) ,trackedGrads(std::make_shared<std::vector<std::vector<float>>>()),
 	virtual ~SolverBase() { delete coro;}
 
 	/* make object not copyable, but movealble only */
@@ -76,8 +84,9 @@ public:
 		rhs.coro = nullptr;
 		trackedStates= std::make_shared<std::vector<std::vector<float>>>();
 		trackedGrads= std::make_shared<std::vector<std::vector<float>>>();
+		track = std::make_shared<std::vector<Track>>();
 	}
-
+	virtual void setSettings(int trackStates, int trackGrads, int minimizeModesOnly, float mode_thresh) = 0;
 	SolverBase& operator= (SolverBase&& rhs) {
 		state = std::move(rhs.state);
 		objective = std::move(rhs.objective);
@@ -85,7 +94,7 @@ public:
 		rhs.coro = nullptr;
 		trackedStates= std::make_shared<std::vector<std::vector<float>>>();
 		trackedGrads= std::make_shared<std::vector<std::vector<float>>>();
-
+		track = std::make_shared<std::vector<Track>>();
 		return *this;
 	}
 
@@ -107,6 +116,8 @@ public:
 	std::shared_ptr<std::vector<std::vector<float>>> getObjectiveTracker() {return trackedGrads;}
 	std::shared_ptr<std::vector<std::vector<float>>> getStateTracker() {return trackedStates;}
 
+	std::shared_ptr<std::vector<Track>> getTrack() {return track;}
+
 	void start();
 
 	void step();
@@ -126,6 +137,8 @@ protected:
 
 	std::shared_ptr<std::vector<std::vector<float>>> trackedStates;
 	std::shared_ptr<std::vector<std::vector<float>>> trackedGrads;
+	std::shared_ptr<std::vector<Track>> track;
+
 	Vector state; // dof
 	ObjGrad objective; // energy
 

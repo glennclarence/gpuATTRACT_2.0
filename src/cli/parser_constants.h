@@ -61,6 +61,12 @@ constexpr auto EM_DEFAULT_CONCURRENCY = 20000;
 constexpr auto EM_DEFAULT_NUM_CHUNKS = 2;
 
 
+constexpr int DEFAULT_TRACK_GRAD            =  0 ;
+constexpr int DEFAULT_TRACK_STATES          =  0;
+constexpr auto FILE_DEFAULT_TRACK_FILE       = "track_file.csv";
+constexpr int DEFAULT_MIN_MODES             =  0;
+constexpr float DEFAULT_MODES_THRESH         =  -1;
+
 
 /**
  * Simulation context

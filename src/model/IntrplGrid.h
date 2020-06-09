@@ -27,6 +27,7 @@
 #include "Grid.h"
 #include "VoxelOctet.h"
 #include "macros.h"
+#include <math.h>
 
 namespace as {
 

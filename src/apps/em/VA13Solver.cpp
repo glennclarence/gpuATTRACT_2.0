@@ -20,13 +20,13 @@
 #include <iostream>
 
 #include "VA13Solver.h"
-
 using std::cerr;
 using std::endl;
 
+
 as::VA13Solver::Options as::VA13Solver::settings;
 
-extern "C" void minfor_(void* FortranSmuggler_ptr, int const& maxFunEval, int const& minTrans,int const& minRot,int const& minMode,int const& numModesRec, int const& numModesLig,
+extern "C" void minfor_(void* FortranSmuggler_ptr, int const& maxFunEval, int const& minTrans,int const& minRot, int const& minMode,double const & mode_thresh,int const & use_mode_thresh,int const& numModesRec, int const& numModesLig,
 		double const* state);
 
 namespace as {
@@ -34,7 +34,7 @@ namespace as {
 
 void VA13Solver::run(push_type& ca) {
 	/* Create Smuggler */
-	VA13Solver::FortranSmuggler smuggler(ca, state, objective, trackedStates, trackedGrads, settings);
+	VA13Solver::FortranSmuggler smuggler(ca, state, objective, track, settings); //, trackedGrads
 	/* create and fill state array */
 
 	double state_array[state.rows()];
@@ -42,13 +42,16 @@ void VA13Solver::run(push_type& ca) {
 		state_array[i] = state(i);
 
 	}
-
+	int use_mode_thresh = settings.mode_thresh > 0 ? 1 : 0;
 	minfor_(&smuggler, settings.maxFunEval,
 			settings.minimizeTranslation,
 			settings.minimizeRotation,
 			settings.minimizeModes,
+			settings.mode_thresh,
+			use_mode_thresh,
 			Common_Modes::numModesRec,
-			Common_Modes::numModesLig, state_array);
+			Common_Modes::numModesLig,
+			state_array);
 }
 
 
@@ -94,21 +97,25 @@ extern "C" void state_tracker_(void* FortranSmuggler_ptr, double state_ptr[], do
 	as::VA13Solver::FortranSmuggler* smuggler = static_cast<as::VA13Solver::FortranSmuggler*>(FortranSmuggler_ptr);
 
 	as::VA13Solver::Options settings = smuggler->getOptions();
+
+	as::Track track;
+
+
 	if (settings.trackGradients){
 		std::vector<float> grads;
-		grads.push_back(*energy);
 		for (int i = 0; i < *size; ++i)
 		{
-			grads.push_back(grad[i]);
+			track.grads.push_back(grad[i]);
 		}
-		smuggler->push_grad(grads);
+		track.energy = *energy;
 	}
 	if (settings.trackStates){
-		std::vector<float> state;
 		for (int i = 0; i < *size; ++i)
 		{
-			state.push_back(state_ptr[i]);
+			track.states.push_back(state_ptr[i]);
 		}
-		smuggler->push_state(state);
+	}
+	if(settings.trackStates || settings.trackGradients){
+		smuggler->push_track(track);
 	}
 }

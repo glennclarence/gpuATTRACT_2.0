@@ -358,6 +358,11 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 					lig->numAtoms(),
 					dof._6D.ang
 			); // OK
+			enGrad._6D.E =0;
+			enGrad._6D.E += dof.modesRec[0] * dof.modesRec[0];
+			enGrad._6D.E += dof.modesLig[0] * dof.modesLig[0];
+			enGrad.modesLig[0] = dof.modesLig[0];
+			enGrad.modesRec[0]  = dof.modesRec[0];
 
 		}
 

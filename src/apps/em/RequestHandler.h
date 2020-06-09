@@ -26,13 +26,13 @@
 #include <list>
 #include <memory>
 
-
 namespace as {
 
 template<typename GenericTypes>
 class Server;
 
 class SolverBase;
+class Track;
 struct Statistic;
 
 template<typename GenericTypes>
@@ -70,7 +70,10 @@ private:
 	std::list<Chunk> _chunkList;
 	std::vector<extDOF> _collectedRequests;
 	std::vector<extEnGrad> _collectedResults;
-
+	int _trackGradients;
+	int _trackStates;
+	int _minmodesonly;
+	float _mode_thresh;
 
 	explicit RequestHandler(std::shared_ptr<extServer> server,
 			unsigned numConcurrentObjects,
@@ -78,7 +81,10 @@ private:
 			unsigned minChunkSize,
 			std::vector<extDOF> const& dofs,
 			common_t const& common,
-			std::string const& solverName);
+			std::string const& solverName,int trackStates,
+			int trackGradients,
+			int minmodesonly,
+			float mode_thresh);
 
 	void init(std::string const& solverName, std::vector<extDOF> const& dofs);
 
@@ -90,6 +96,7 @@ public:
 	std::vector<extEnGrad> getResultEnGrads() noexcept;
 	std::vector<std::shared_ptr<std::vector<std::vector<float>>>>  getResultEnGradTracker() noexcept;
 	std::vector<std::shared_ptr<std::vector<std::vector<float>>>> getResultStateTracker() noexcept;
+	std::vector<std::shared_ptr<std::vector<Track>>> getTrack() noexcept;
 
 	std::vector<std::unique_ptr<Statistic>> getStatistics() noexcept;
 

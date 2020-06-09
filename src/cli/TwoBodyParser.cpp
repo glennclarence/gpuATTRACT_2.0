@@ -36,6 +36,14 @@ void TwoBodyParser::addOptions() noexcept {
 			("par,p"	          , po::value<string>()->default_value(FILE_DEFAULT_PARAMETER)		, "attract forcefield parameter file")
 			("alphabetrec"		  , po::value<string>()->default_value(FILE_DEFAULT_GRID_ALPAHBET_RECEPTOR)	, "receptor grid alphabet file")
 			("alphabetlig"		  , po::value<string>()->default_value(FILE_DEFAULT_GRID_ALPAHBET_LIGAND)	, "ligand grid alphabet file")
+
+			("trackGradients"	  , po::value<int>()->default_value(DEFAULT_TRACK_GRAD)	  , 		"track the gradients while minimizing")
+			("trackStates"		  , po::value<int>()->default_value(DEFAULT_TRACK_STATES)	, 	"track the states while minimizing")
+			("trackFile"		  , po::value<string>()->default_value(FILE_DEFAULT_TRACK_FILE)	   , 		"output file for tracked states or gradients")
+
+			("minmodesonly"		  , po::value<int>()->default_value(DEFAULT_MIN_MODES)	   , "specify if only modes should be minimized")
+			("mode_thresh"		  , po::value<float>()->default_value(DEFAULT_MODES_THRESH)	, "Threshhold factor for modes. Deformation may not exceed this value")
+
 			("modesl"	          , po::value<string>()->default_value(DEFAULT_MODE_RECEPTOR_FILE)  , "mode file of ligand")
 			("modesr"	          , po::value<string>()->default_value(DEFAULT_MODE_LIGAND_FILE)	, "mode file of receptor");
 	_optsDesc.add(input);
@@ -114,7 +122,6 @@ void TwoBodyParser::assignArgs(po::variables_map const& vm) noexcept {
 		_args->dielec = vm["dielec"].as<string>();
 	if(vm.count("epsilon"))
 		_args->epsilon = vm["epsilon"].as<double>();
-
 	if(vm.count("cutoff"))
 			_args->cutoff = vm["cutoff"].as<double>();
 	if(vm.count("evscale"))
@@ -123,6 +130,17 @@ void TwoBodyParser::assignArgs(po::variables_map const& vm) noexcept {
 		_args->numModesRec = vm["numModesRec"].as<int>();
 	if(vm.count("numModesLig"))
 			_args->numModesLig = vm["numModesLig"].as<int>();
+
+	if(vm.count("trackGradients"))
+				_args->trackGradients = vm["trackGradients"].as<int>();
+	if(vm.count("trackStates"))
+				_args->trackStates = vm["trackStates"].as<int>();
+	if(vm.count("minmodesonly"))
+				_args->minmodesonly = vm["minmodesonly"].as<int>();
+	if(vm.count("mode_thresh"))
+				_args->mode_thresh = vm["mode_thresh"].as<float>();
+	if(vm.count("trackFile"))
+		_args->trackFile = vm["trackFile"].as<string>();
 
 }
 

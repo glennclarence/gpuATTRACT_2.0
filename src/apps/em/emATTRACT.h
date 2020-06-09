@@ -42,6 +42,11 @@ private:
 
 	std::shared_ptr<configurator_t> _config;
 	std::string _solverName;
+	int minModesOnly;
+	int trackStates;
+	int trackGradients;
+	std::string track_file;
+	float mode_thresh;
 
 };
 
