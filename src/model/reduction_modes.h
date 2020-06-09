@@ -171,78 +171,103 @@ void deviceReduce(
 }
 
 /* remaining reduce part that is performed on the host */
-template<typename REAL>
+template<typename REAL, int PROTEINTYPE, bool MODES>
 void h_finalReduce(
 			const unsigned& numDOFs,
+			d_Protein<REAL>* protein,
 			DOF_6D_Modes<REAL>* dofs,
-			REAL const* modeForceConstantRec,
-			REAL const* modeForceConstantLig,
-			const unsigned int& numModesRec,
-			const unsigned int& numModesLig,
 			const REAL* deviceOut,
 			Result_6D_Modes<REAL>* enGrads)
 {
-	unsigned const dofSize = 13 + numModesRec + numModesLig;
+	unsigned dofSize = 13 ;
+	if(MODES){
+		dofSize += protein->numModes;
+	}
+
+
 	for (unsigned i = 0; i < numDOFs; ++i)
 	{
 		auto &enGrad = enGrads[i];
-		enGrad._6D.pos.x = deviceOut[i*dofSize + 0];
-		enGrad._6D.pos.y = deviceOut[i*dofSize + 1];
-		enGrad._6D.pos.z = deviceOut[i*dofSize + 2];
-
-		for(unsigned j = 0; j < 3; ++j) {
-			REAL magn2 = enGrad._6D.pos.x*enGrad._6D.pos.x
-					+ enGrad._6D.pos.y*enGrad._6D.pos.y
-					+ enGrad._6D.pos.z*enGrad._6D.pos.z;
-
-			if(magn2 > static_cast<REAL>(ForceLim)) {
-				enGrad._6D.pos.x *= 0.01;
-				enGrad._6D.pos.y *= 0.01;
-				enGrad._6D.pos.z *= 0.01;
-			}
-		}
-
-		enGrad._6D.E = deviceOut[i*dofSize + 3];
-
-		Torque<REAL> torque;
-		torque.mat[0][0] = deviceOut[i*dofSize + 4 ];
-		torque.mat[0][1] = deviceOut[i*dofSize + 5 ];
-		torque.mat[0][2] = deviceOut[i*dofSize + 6 ];
-		torque.mat[1][0] = deviceOut[i*dofSize + 7 ];
-		torque.mat[1][1] = deviceOut[i*dofSize + 8 ];
-		torque.mat[1][2] = deviceOut[i*dofSize + 9 ];
-		torque.mat[2][0] = deviceOut[i*dofSize + 10];
-		torque.mat[2][1] = deviceOut[i*dofSize + 11];
-		torque.mat[2][2] = deviceOut[i*dofSize + 12];
-
-		for(int mode=0; mode < numModesLig; mode++){
-			enGrad.modesLig[mode]=deviceOut[i*dofSize + 13 +mode];
-		}
-
-		for(int mode=0; mode < numModesRec; mode++){
-			enGrad.modesRec[mode]=deviceOut[i*dofSize + 13 + numModesLig + mode];
-		}
-
-		correctModeForce(
-			modeForceConstantRec,
-			numModesRec,
-			enGrad.modesRec
-			);
-
-		correctModeForce(
-			modeForceConstantLig,
-			numModesLig,
-			enGrad.modesLig
-			);
-
-
 		const auto &dof = dofs[i];
-		const TorqueMat<REAL> torqueMat = euler2torquemat(dof._6D.ang.x, dof._6D.ang.y, dof._6D.ang.z);
-		Vec3<REAL> result = torqueMat.rotateReduce(torque);
+		if(PROTEINTYPE == 1){
+			enGrad._6D.pos.x = deviceOut[i*dofSize + 0];
+			enGrad._6D.pos.y = deviceOut[i*dofSize + 1];
+			enGrad._6D.pos.z = deviceOut[i*dofSize + 2];
 
-		enGrad._6D.ang.x = result.x;
-		enGrad._6D.ang.y = result.y;
-		enGrad._6D.ang.z = result.z;
+			for(unsigned j = 0; j < 3; ++j) {
+				REAL magn2 = enGrad._6D.pos.x*enGrad._6D.pos.x
+						+ enGrad._6D.pos.y*enGrad._6D.pos.y
+						+ enGrad._6D.pos.z*enGrad._6D.pos.z;
+
+				if(magn2 > static_cast<REAL>(ForceLim)) {
+					enGrad._6D.pos.x *= 0.01;
+					enGrad._6D.pos.y *= 0.01;
+					enGrad._6D.pos.z *= 0.01;
+				}
+			}
+			enGrad._6D.E = deviceOut[i*dofSize + 3];
+
+			Torque<REAL> torque;
+			torque.mat[0][0] = deviceOut[i*dofSize + 4 ];
+			torque.mat[0][1] = deviceOut[i*dofSize + 5 ];
+			torque.mat[0][2] = deviceOut[i*dofSize + 6 ];
+			torque.mat[1][0] = deviceOut[i*dofSize + 7 ];
+			torque.mat[1][1] = deviceOut[i*dofSize + 8 ];
+			torque.mat[1][2] = deviceOut[i*dofSize + 9 ];
+			torque.mat[2][0] = deviceOut[i*dofSize + 10];
+			torque.mat[2][1] = deviceOut[i*dofSize + 11];
+			torque.mat[2][2] = deviceOut[i*dofSize + 12];
+
+			const TorqueMat<REAL> torqueMat = euler2torquemat(dof._6D.ang.x, dof._6D.ang.y, dof._6D.ang.z);
+			Vec3<REAL> result = torqueMat.rotateReduce(torque);
+
+			enGrad._6D.ang.x = result.x;
+			enGrad._6D.ang.y = result.y;
+			enGrad._6D.ang.z = result.z;
+			//std::cout << enGrad<< std::endl;
+		}
+
+		if(MODES){
+			if(PROTEINTYPE == 1){
+
+				for(int mode=0; mode < protein->numModes; mode++){
+					enGrad.modesLig[mode]=deviceOut[i*dofSize + 13 + mode];
+				}
+				correctModeForce(
+					protein->modeForce,
+					protein->numModes,
+					dof.modesLig,
+					enGrad.modesLig
+					);
+
+				//std::cout << "lig "<<enGrad._6D.E<< " "<< getModeEngergy(protein->modeForce,protein->numModes,dof.modesLig)<<" ";
+				enGrad._6D.E += getModeEngergy(protein->modeForce,
+					protein->numModes,
+					dof.modesLig
+					);
+			}
+			else{
+				for(int mode=0; mode < protein->numModes; mode++){
+					enGrad.modesRec[mode]=deviceOut[i*dofSize + 13 + mode];
+				}
+				correctModeForce(
+					protein->modeForce,
+					protein->numModes,
+					dof.modesRec,
+					enGrad.modesRec
+					);
+				//std::cout << "rec "<<enGrad._6D.E<< " "<< getModeEngergy(protein->modeForce,protein->numModes,dof.modesRec)<<" ";
+
+				enGrad._6D.E += getModeEngergy(protein->modeForce,
+					protein->numModes,
+					dof.modesRec
+					);
+			}
+
+		}
+		//std::cout << "energy "<<enGrad._6D.E<<std::endl;
+
+
 	}
 }
 #endif // CUDA
