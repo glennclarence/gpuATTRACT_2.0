@@ -46,6 +46,7 @@ public:
 	 * Allocate new Buffers with size. Old buffers are automatically deallocated;
 	 */
 	void allocateBufferRec(size_t size) {
+        h_defoLig = std::move(WorkerBuffer<REAL>(3,size));
 		h_trafoLig = std::move(WorkerBuffer<REAL>(3,size));
 		h_potLig = std::move(WorkerBuffer<REAL>(4,size));
 	}
@@ -64,8 +65,9 @@ public:
 		return h_trafoLig.bufferSize();
 	}
 
-	WorkerBuffer<REAL> h_trafoRec;
 	WorkerBuffer<REAL> h_defoRec;
+	WorkerBuffer<REAL> h_trafoRec;
+	WorkerBuffer<REAL> h_defoLig;
 	WorkerBuffer<REAL> h_trafoLig;
 
 	WorkerBuffer<REAL> h_potRec;
@@ -123,46 +125,29 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 			auto& enGrad = results[i];
 
 			//invert the receptor DOF such that it points to the receptor in the ligand system
-			DOF_6D_Modes<REAL> invertedRecDOF=invertDOF(dof);
-
-			//translate the coordinates of the receptor
-			rotate_translate_deform(
-				rec->xPos(),
-				rec->yPos(),
-				rec->zPos(),
-				invertedRecDOF._6D.pos,
-				invertedRecDOF._6D.ang,
-				rec->numAtoms(),
-				rec->numModes(),
-				invertedRecDOF.modesRec,
-				rec->xModes(),
-				rec->yModes(),
-				rec->zModes(),
+			h_DOFPos(
+				rec,
+				dof,
+				0,
 				buffers->h_defoRec.getX(),
 				buffers->h_defoRec.getY(),
 				buffers->h_defoRec.getZ(),
 				buffers->h_trafoRec.getX(),//output
 				buffers->h_trafoRec.getY(),
 				buffers->h_trafoRec.getZ()
-			); // OK
+				);
 
-			//translate the coordinates of the Ligand
-			rotate_translate(
-				lig->xPos(),
-				lig->yPos(),
-				lig->zPos(),
-				dof._6D.pos,
-				dof._6D.ang,
-				lig->numAtoms(),
-				lig->numModes(),
-				dof.modesLig,
-				lig->xModes(),
-				lig->yModes(),
-				lig->zModes(),
+			h_DOFPos(
+				lig,
+				dof,
+				1,
+				buffers->h_defoLig.getX(),
+				buffers->h_defoLig.getY(),
+				buffers->h_defoLig.getZ(),
 				buffers->h_trafoLig.getX(),//output
 				buffers->h_trafoLig.getY(),
 				buffers->h_trafoLig.getZ()
-			); // OK
+				);
 
 			// Debug
 //			for(size_t i = 0; i < lig->numAtoms(); ++i) {
@@ -183,14 +168,6 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 				buffers->h_potRec.getY(),
 				buffers->h_potRec.getZ(),
 				buffers->h_potRec.getW()
-			);
-
-			//rotate forces back into the receptor frame
-			rotate_forces(invertedRecDOF._6D.ang.inv(),
-				rec-> numAtoms(),
-				buffers->h_potRec.getX(),
-				buffers->h_potRec.getY(),
-				buffers->h_potRec.getZ()
 			);
 
 			// calculate the forces acting on the ligand via the receptor grid in the receptor/global system
@@ -236,6 +213,30 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 				buffers->h_potRec.getZ()
 			); // OK
 
+			NLPotForce(
+				gridLig->NL.get(),
+				lig,
+				rec,
+				simParams,
+				table,
+				buffers->h_defoLig.getX(),
+				buffers->h_defoLig.getY(),
+				buffers->h_defoLig.getZ(),
+				buffers->h_trafoRec.getX(),
+				buffers->h_trafoRec.getY(),
+				buffers->h_trafoRec.getZ(),
+				buffers->h_potRec.getX(), // output
+				buffers->h_potRec.getY(),
+				buffers->h_potRec.getZ(),
+				buffers->h_potRec.getW()
+				);
+
+			rotate_forces(dof._6D.ang,
+				rec-> numAtoms(),
+				buffers->h_potRec.getX(),
+				buffers->h_potRec.getY(),
+				buffers->h_potRec.getZ()
+				);
 ////			// Debug
 //			for(size_t i = 0; i < lig->numAtoms(); ++i) {
 ////			for(size_t i = 0; i < 20; ++i) {
@@ -273,18 +274,13 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 				lig->zModes(),
 				lig->numAtoms(),
 				lig->numModes(),
-				redPotForce.modesLig
+				1,
+				enGrad.modesLig
 				);
 
-			correctModeForce(
-				lig-> modeForce(),
-				lig-> numModes(),
-				redPotForce.modesLig
-				);
-
-			////Reduce forces on receptor
 
 			reduceModeForce(
+				dof._6D.ang,
 				buffers->h_potRec.getX(),
 				buffers->h_potRec.getY(),
 				buffers->h_potRec.getZ(),
@@ -293,36 +289,52 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 				rec->zModes(),
 				rec->numAtoms(),
 				rec->numModes(),
-				redPotForce.modesRec
+				0,
+				enGrad.modesRec
 				);
 
 			correctModeForce(
 				rec->modeForce(),
 				rec-> numModes(),
-				redPotForce.modesRec
+				dof.modesRec,
+				enGrad.modesRec
+				);
+			correctModeForce(
+				lig-> modeForce(),
+				lig-> numModes(),
+				dof.modesLig,
+				enGrad.modesLig
 				);
 
 
-			//copy reduced forces
-			for( int mode = 0; mode < lig->numModes(); mode++) {
-				enGrad.modesLig[mode]=redPotForce.modesLig[mode];
-			}
-			for( int mode = 0; mode < rec->numModes(); mode++) {
-				enGrad.modesRec[mode]=redPotForce.modesRec[mode];
-			}
-			enGrad._6D.E = redPotForce.E;
+			double modeEnergyLigand = getModeEngergy(lig->modeForce(),
+					lig->numModes(),
+					dof.modesLig
+					);
+
+			double modeEnergyReceptor = getModeEngergy(rec->modeForce(),
+					rec->numModes(),
+					dof.modesRec
+					);
+
+			enGrad._6D.E = redPotForce.E + modeEnergyReceptor + modeEnergyLigand;
 			enGrad._6D.pos = redPotForce.pos;
 
 			enGrad._6D.ang = reduceTorque(
-					lig->xPos(),
-					lig->yPos(),
-					lig->zPos(),
+					buffers->h_defoLig.getX(),
+					buffers->h_defoLig.getY(),
+					buffers->h_defoLig.getZ(),
 					buffers->h_potLig.getX(),
 					buffers->h_potLig.getY(),
 					buffers->h_potLig.getZ(),
 					lig->numAtoms(),
 					dof._6D.ang
 			); // OK
+			enGrad._6D.E =0;
+			enGrad._6D.E += dof.modesRec[0] * dof.modesRec[0];
+			enGrad._6D.E += dof.modesLig[0] * dof.modesLig[0];
+			enGrad.modesLig[0] = dof.modesLig[0];
+			enGrad.modesRec[0]  = dof.modesRec[0];
 
 		}
 
