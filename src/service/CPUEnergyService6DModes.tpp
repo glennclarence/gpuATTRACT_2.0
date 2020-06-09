@@ -170,14 +170,6 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 				buffers->h_potRec.getW()
 			);
 
-			//rotate forces back into the receptor frame
-			// rotate_forces(invertedRecDOF._6D.ang.inv(),
-			// 	rec-> numAtoms(),
-			// 	buffers->h_potRec.getX(),
-			// 	buffers->h_potRec.getY(),
-			// 	buffers->h_potRec.getZ()
-			// );
-
 			// calculate the forces acting on the ligand via the receptor grid in the receptor/global system
 			potForce(
 				gridRec->inner.get(),
@@ -220,7 +212,31 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 				buffers->h_potRec.getY(),
 				buffers->h_potRec.getZ()
 			); // OK
+            
+			NLPotForce(
+				gridLig->NL.get(),
+				lig,
+				rec,
+				simParams,
+				table,
+				buffers->h_defoLig.getX(),
+				buffers->h_defoLig.getY(),
+				buffers->h_defoLig.getZ(),
+				buffers->h_trafoRec.getX(),
+				buffers->h_trafoRec.getY(),
+				buffers->h_trafoRec.getZ(),
+				buffers->h_potRec.getX(), // output
+				buffers->h_potRec.getY(),
+				buffers->h_potRec.getZ(),
+				buffers->h_potRec.getW()
+				);
 
+			rotate_forces(dof._6D.ang,
+				rec-> numAtoms(),
+				buffers->h_potRec.getX(),
+				buffers->h_potRec.getY(),
+				buffers->h_potRec.getZ()
+				);
 ////			// Debug
 //			for(size_t i = 0; i < lig->numAtoms(); ++i) {
 ////			for(size_t i = 0; i < 20; ++i) {
