@@ -25,6 +25,14 @@ public:
 };
 
 
+/*
+ * @bief: reduceModeForce is essentially a dot product of the force vector and the modevector
+ * resulting in the effective force from the modes.
+ * IMPORTANT: 1. the forces used have to be rotated such that
+ * they are the corresponding coordinatesystem.
+ * 2. after the forces have been reduced they have to corrected by correctModeforce
+ *
+ */
 template<typename REAL>
 void reduceModeForce(
 		Vec3<REAL> const& ang,
@@ -36,17 +44,20 @@ void reduceModeForce(
 		const REAL* modeZ,
 		unsigned const& numAtoms,
 		unsigned const& numModes,
+		unsigned const& type_protein,
 		REAL* result
 		)
 {
-	//TODO: think about passing protein to function with member "isreceptor"to determine rotation
-	//rotate forces into ligand frame
-	const RotMat<REAL> rotMatInv = euler2rotmat(ang.x, ang.y, ang.z).getInv();
-	for( int i=0; i<numModes;i++){result[i]=0;}
-
+	RotMat<REAL> rotMat;
+	if( type_protein == 1 ){
+		rotMat = euler2rotmat(ang.x, ang.y, ang.z).getInv();
+	}
+	std::fill(result, result + numModes, 0);
 	for (unsigned i = 0; i < numAtoms; ++i) {
 		Vec3<REAL> forceAtom(forceX[i], forceY[i], forceZ[i]);
-		forceAtom = rotMatInv * forceAtom;
+		if( type_protein == 1 ){
+			forceAtom = rotMat * forceAtom;
+		}
 		for(int mode=0;mode<numModes;mode++){
 				result[mode] -= forceAtom.x*modeX[i*numModes+mode]
 							  + forceAtom.y*modeY[i*numModes+mode]
@@ -56,38 +67,9 @@ void reduceModeForce(
 
 }
 
-/*
- * @bief: reduceModeForce is essentially a dot product of the force vector and the modevector
- * resulting in the effective force from the modes.
- * IMPORTANT: 1. the forces used have to be rotated such that
- * they are the corresponding coordinatesystem.
- * 2. after the forces have been reduced they have to corrected by correctModeforce
- *
- */
-template<typename REAL>
-void reduceModeForce(
-		const REAL* forceX,
-		const REAL* forceY,
-		const REAL* forceZ,
-		const REAL* modeX,
-		const REAL* modeY,
-		const REAL* modeZ,
-		unsigned const& numAtoms,
-		unsigned const& numModes,
-		REAL* result
-		)
-{
-	//TODO: think about passing protein to function with member "isreceptor"to determine rotation
-	//rotate forces into ligand frame
-	for( int i=0; i<numModes;i++){result[i]=0;}
-	for (unsigned i = 0; i < numAtoms; ++i) {
-		for(int mode = 0; mode < numModes; mode++){
-				result[mode] -= forceX[i]*modeX[i*numModes+mode]+
-								forceY[i]*modeY[i*numModes+mode]+
-								forceZ[i]*modeZ[i*numModes+mode];
-		}
-	}
-}
+
+
+
 /**
  * @brief: this function corrects for strong mode interaction.
  * In case that high forces are acting the Proteins the mode tend
@@ -101,17 +83,33 @@ template<typename REAL>
 void correctModeForce(
 		const REAL* modeForceConstant,
 		unsigned const& numModes,
+		const REAL* dlig,
 		REAL* delta
 		)
 {
 	constexpr REAL factor = 4.0;
-	constexpr int exp = 4;
+	constexpr int exp = 3;
 	REAL counterForce;
 
 	for(int mode = 0; mode < numModes; mode++){
-		counterForce=factor*modeForceConstant[mode]*pow(delta[mode],exp);
+		counterForce=factor*modeForceConstant[mode]*pow(dlig[mode],exp);
 		delta[mode]=delta[mode]+counterForce;
 	}
+}
+
+template<typename REAL>
+REAL getModeEngergy(
+		const REAL* modeForceConstant,
+		unsigned const& numModes,
+		const REAL* dlig
+		)
+{
+	constexpr int exp = 4;
+	REAL energy = 0;
+	for(int mode = 0; mode < numModes; mode++){
+		energy += modeForceConstant[mode]*pow(dlig[mode],exp);
+	}
+	return energy;
 }
 
 

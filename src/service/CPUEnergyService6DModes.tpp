@@ -212,7 +212,7 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 				buffers->h_potRec.getY(),
 				buffers->h_potRec.getZ()
 			); // OK
-            
+
 			NLPotForce(
 				gridLig->NL.get(),
 				lig,
@@ -274,18 +274,13 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 				lig->zModes(),
 				lig->numAtoms(),
 				lig->numModes(),
-				redPotForce.modesLig
+				1,
+				enGrad.modesLig
 				);
 
-			correctModeForce(
-				lig-> modeForce(),
-				lig-> numModes(),
-				redPotForce.modesLig
-				);
-
-			////Reduce forces on receptor
 
 			reduceModeForce(
+				dof._6D.ang,
 				buffers->h_potRec.getX(),
 				buffers->h_potRec.getY(),
 				buffers->h_potRec.getZ(),
@@ -294,36 +289,52 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 				rec->zModes(),
 				rec->numAtoms(),
 				rec->numModes(),
-				redPotForce.modesRec
+				0,
+				enGrad.modesRec
 				);
 
 			correctModeForce(
 				rec->modeForce(),
 				rec-> numModes(),
-				redPotForce.modesRec
+				dof.modesRec,
+				enGrad.modesRec
+				);
+			correctModeForce(
+				lig-> modeForce(),
+				lig-> numModes(),
+				dof.modesLig,
+				enGrad.modesLig
 				);
 
 
-			//copy reduced forces
-			for( int mode = 0; mode < lig->numModes(); mode++) {
-				enGrad.modesLig[mode]=redPotForce.modesLig[mode];
-			}
-			for( int mode = 0; mode < rec->numModes(); mode++) {
-				enGrad.modesRec[mode]=redPotForce.modesRec[mode];
-			}
-			enGrad._6D.E = redPotForce.E;
+			double modeEnergyLigand = getModeEngergy(lig->modeForce(),
+					lig->numModes(),
+					dof.modesLig
+					);
+
+			double modeEnergyReceptor = getModeEngergy(rec->modeForce(),
+					rec->numModes(),
+					dof.modesRec
+					);
+
+			enGrad._6D.E = redPotForce.E + modeEnergyReceptor + modeEnergyLigand;
 			enGrad._6D.pos = redPotForce.pos;
 
 			enGrad._6D.ang = reduceTorque(
-					lig->xPos(),
-					lig->yPos(),
-					lig->zPos(),
+					buffers->h_defoLig.getX(),
+					buffers->h_defoLig.getY(),
+					buffers->h_defoLig.getZ(),
 					buffers->h_potLig.getX(),
 					buffers->h_potLig.getY(),
 					buffers->h_potLig.getZ(),
 					lig->numAtoms(),
 					dof._6D.ang
 			); // OK
+			enGrad._6D.E =0;
+			enGrad._6D.E += dof.modesRec[0] * dof.modesRec[0];
+			enGrad._6D.E += dof.modesLig[0] * dof.modesLig[0];
+			enGrad.modesLig[0] = dof.modesLig[0];
+			enGrad.modesRec[0]  = dof.modesRec[0];
 
 		}
 
