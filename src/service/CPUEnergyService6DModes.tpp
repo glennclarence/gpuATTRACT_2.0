@@ -46,6 +46,7 @@ public:
 	 * Allocate new Buffers with size. Old buffers are automatically deallocated;
 	 */
 	void allocateBufferRec(size_t size) {
+        h_defoLig = std::move(WorkerBuffer<REAL>(3,size));
 		h_trafoLig = std::move(WorkerBuffer<REAL>(3,size));
 		h_potLig = std::move(WorkerBuffer<REAL>(4,size));
 	}
@@ -64,8 +65,9 @@ public:
 		return h_trafoLig.bufferSize();
 	}
 
-	WorkerBuffer<REAL> h_trafoRec;
 	WorkerBuffer<REAL> h_defoRec;
+	WorkerBuffer<REAL> h_trafoRec;
+	WorkerBuffer<REAL> h_defoLig;
 	WorkerBuffer<REAL> h_trafoLig;
 
 	WorkerBuffer<REAL> h_potRec;
@@ -123,46 +125,29 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 			auto& enGrad = results[i];
 
 			//invert the receptor DOF such that it points to the receptor in the ligand system
-			DOF_6D_Modes<REAL> invertedRecDOF=invertDOF(dof);
-
-			//translate the coordinates of the receptor
-			rotate_translate_deform(
-				rec->xPos(),
-				rec->yPos(),
-				rec->zPos(),
-				invertedRecDOF._6D.pos,
-				invertedRecDOF._6D.ang,
-				rec->numAtoms(),
-				rec->numModes(),
-				invertedRecDOF.modesRec,
-				rec->xModes(),
-				rec->yModes(),
-				rec->zModes(),
+			h_DOFPos(
+				rec,
+				dof,
+				0,
 				buffers->h_defoRec.getX(),
 				buffers->h_defoRec.getY(),
 				buffers->h_defoRec.getZ(),
 				buffers->h_trafoRec.getX(),//output
 				buffers->h_trafoRec.getY(),
 				buffers->h_trafoRec.getZ()
-			); // OK
+				);
 
-			//translate the coordinates of the Ligand
-			rotate_translate(
-				lig->xPos(),
-				lig->yPos(),
-				lig->zPos(),
-				dof._6D.pos,
-				dof._6D.ang,
-				lig->numAtoms(),
-				lig->numModes(),
-				dof.modesLig,
-				lig->xModes(),
-				lig->yModes(),
-				lig->zModes(),
+			h_DOFPos(
+				lig,
+				dof,
+				1,
+				buffers->h_defoLig.getX(),
+				buffers->h_defoLig.getY(),
+				buffers->h_defoLig.getZ(),
 				buffers->h_trafoLig.getX(),//output
 				buffers->h_trafoLig.getY(),
 				buffers->h_trafoLig.getZ()
-			); // OK
+				);
 
 			// Debug
 //			for(size_t i = 0; i < lig->numAtoms(); ++i) {
@@ -186,12 +171,12 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 			);
 
 			//rotate forces back into the receptor frame
-			rotate_forces(invertedRecDOF._6D.ang.inv(),
-				rec-> numAtoms(),
-				buffers->h_potRec.getX(),
-				buffers->h_potRec.getY(),
-				buffers->h_potRec.getZ()
-			);
+			// rotate_forces(invertedRecDOF._6D.ang.inv(),
+			// 	rec-> numAtoms(),
+			// 	buffers->h_potRec.getX(),
+			// 	buffers->h_potRec.getY(),
+			// 	buffers->h_potRec.getZ()
+			// );
 
 			// calculate the forces acting on the ligand via the receptor grid in the receptor/global system
 			potForce(
