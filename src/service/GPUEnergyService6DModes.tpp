@@ -567,15 +567,15 @@ public:
 			cudaVerify(cudaEventSynchronize(events[1]));
 
 			nvtxRangePushA("Host");
-			h_finalReduce(
-				it->size(),
-				it->inputBuffer(),
-				stageResc.rec->modeForce,
-				stageResc.lig->modeForce,
-				stageResc.rec->numModes,
-				stageResc.lig->numModes,
-				h_res[pipeIdx[0]].get(0),
-				it->resultBuffer());
+			// h_finalReduce(
+			// 	it->size(),
+			// 	it->inputBuffer(),
+			// 	stageResc.rec->modeForce,
+			// 	stageResc.lig->modeForce,
+			// 	stageResc.rec->numModes,
+			// 	stageResc.lig->numModes,
+			// 	h_res[pipeIdx[0]].get(0),
+			// 	it->resultBuffer());
 			nvtxRangePop();
 
 			/* Signal that result is in buffer */
