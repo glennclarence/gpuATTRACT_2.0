@@ -191,11 +191,14 @@ public:
 
 	}
 
-	void score( ) {
+	void process_item( ) {
 		auto* const it = _resources.item;
 
 		it->setProcessed();
 	}
+
+
+
 	WorkerBuffer<dof_t, DeviceAllocator<dof_t>> d_dof;
 	WorkerBuffer<REAL, DeviceAllocator<REAL>> d_defoRec;
 	WorkerBuffer<REAL, DeviceAllocator<REAL>> d_defoLig;
@@ -267,7 +270,7 @@ auto GPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 		} else {
 			return false;
 		}
-		p->score();
+		p->process_item();
 
 		return true;
 
