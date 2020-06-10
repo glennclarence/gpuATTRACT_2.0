@@ -324,6 +324,22 @@ public:
 					cudaMemcpyDeviceToHost, _stream));
 			cudaVerify(cudaStreamSynchronize(_stream));
 
+			h_finalReduce< REAL, 1, true>(
+				it->size(),
+				_resources.lig,
+				it->inputBuffer(),
+				h_resLig.get(0),
+				it->resultBuffer());
+				nvtxRangePop();
+
+			h_finalReduce< REAL, 0, true>(
+				it->size(),
+				_resources.rec,
+				it->inputBuffer(),
+				h_resRec.get(0),
+				it->resultBuffer());
+			nvtxRangePop();
+
 		it->setProcessed();
 	}
 
