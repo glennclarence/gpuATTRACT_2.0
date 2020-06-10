@@ -284,6 +284,18 @@ public:
 				d_potRec.getW()
 				); 
 
+            d_rotateForces(
+                BLSZ_INTRPL,
+                gridSizeRec,
+                _stream,
+                d_potRec.getX(),
+                d_potRec.getY(),
+                d_potRec.getZ(),
+                d_dof.get(0),
+                _resources.rec->numAtoms,
+                it->size()
+                );
+
 		it->setProcessed();
 	}
 
