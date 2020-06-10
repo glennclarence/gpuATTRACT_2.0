@@ -56,9 +56,7 @@ private:
 	size_t _workerId; // serves as counter for
 	std::vector<int> _deviceIds;
 	uint _threadsPerDevice;
-
 	struct StageResource;
-
 	StageResource createStageResource(workItem_t* item, unsigned const& deviceId);
 
 };
