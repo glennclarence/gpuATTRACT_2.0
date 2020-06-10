@@ -103,6 +103,23 @@ void potForce(
 
 #ifdef CUDA
 
+
+template<typename REAL>
+__device__ __forceinline__ void PotForce_device(
+		const d_IntrlpGrid<REAL> inner,
+		const d_IntrlpGrid<REAL> outer,
+		const d_Protein<REAL> prot,
+		const unsigned numDOFs,
+		const unsigned idx,
+		const REAL x,
+		const REAL y,
+		const REAL z,
+		float4 & data_out
+		)
+{
+
+}
+
 template<typename REAL>
 void d_potForce (
 		unsigned blockSize,
@@ -130,12 +147,4 @@ void d_potForce (
 
 #endif /* SRC_INTERPOLATION_H_ */
 
-// for debugging
-//template<typename REAL>
-//std::ostream& operator<< (std::ostream& s, VoxelOctet<REAL> const& octet) {
-//	const REAL* data = reinterpret_cast<const REAL*>(octet.data);
-//	for (size_t i = 0; i < 8; ++i) {
-//		s << data[i] << " ";
-//	}
-//	return s;
-//}
+

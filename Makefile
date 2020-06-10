@@ -60,7 +60,7 @@ else
 	FXX_OFLAGS = 
 endif
 
-CXXFLAGS =  $(OFLAGS) -std=c++11 -fmessage-length=0
+CXXFLAGS =  $(OFLAGS) -std=c++11 -fmessage-length=0 -w
 #INCLUDES = -I$(CURDIR)/src -I$(CURDIR)/src/fileIO 
 LDFLAGS =  #-L...
 LIBS =  -lpthread -lrt $(LIBS_TEST) -lboost_program_options -lgfortran -lboost_coroutine -lboost_context -lboost_system
@@ -82,7 +82,7 @@ endif
 
 
 # prepare nvcc settings
-CUDA_CXX = $(CUDADIR)/bin/nvcc
+CUDA_CXX = $(CUDADIR)/bin/nvcc -w
 ARCHFLAGS = -gencode arch=compute_61,code=sm_61
 ARCHFLAGS2 = -gencode arch=compute_61,code=compute_61
 SOURCES_CU = $(shell find $(SOURCE_DIR) -name "*.cu")
