@@ -16,6 +16,8 @@
 #include "Types_6D_Modes.h"
 #include "nativeTypesWrapper.h"
 
+
+
 namespace as {
 
 class DataManager;
@@ -41,6 +43,7 @@ public:
 
 
 	explicit GPUEnergyService6DModes(std::shared_ptr<DataManager> dataMng, std::vector<int> const& deviceIds);
+	explicit GPUEnergyService6DModes(std::shared_ptr<DataManager> dataMng, std::vector<int> const& deviceIds, uint threadsPerDevice);
 	virtual ~GPUEnergyService6DModes() {};
 
 	distributor_t createDistributor() override;
@@ -52,10 +55,8 @@ private:
 
 	size_t _workerId; // serves as counter for
 	std::vector<int> _deviceIds;
-
-
+	uint _threadsPerDevice;
 	struct StageResource;
-
 	StageResource createStageResource(workItem_t* item, unsigned const& deviceId);
 
 };
