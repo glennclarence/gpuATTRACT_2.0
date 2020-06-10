@@ -17,6 +17,7 @@
 #include <cmath>
 
 #ifdef CUDA
+#include "nativeTypesWrapper.h"
 #include "DeviceIntrplGrid.h"
 #include "DeviceProtein.h"
 #endif
@@ -104,21 +105,8 @@ void potForce(
 #ifdef CUDA
 
 
-template<typename REAL>
-__device__ __forceinline__ void PotForce_device(
-		const d_IntrlpGrid<REAL> inner,
-		const d_IntrlpGrid<REAL> outer,
-		const d_Protein<REAL> prot,
-		const unsigned numDOFs,
-		const unsigned idx,
-		const REAL x,
-		const REAL y,
-		const REAL z,
-		float4 & data_out
-		)
-{
 
-}
+
 
 template<typename REAL>
 void d_potForce (
