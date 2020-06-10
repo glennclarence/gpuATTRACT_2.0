@@ -296,6 +296,34 @@ public:
                 it->size()
                 );
 
+			deviceReduce<REAL, DOF_6D_Modes<REAL>,0>(
+				blockSizeReduceRec,
+				it->size(),
+				_resources.rec,
+				d_dof.get(0),
+				d_defoRec.getX(), d_defoRec.getY(), d_defoRec.getZ(),
+				d_potRec.getX(), d_potRec.getY(), d_potRec.getZ(),
+				d_potRec.getW(),
+				d_resRec.get(0),
+				_stream);
+
+			deviceReduce<REAL, DOF_6D_Modes<REAL>, 1>(
+				blockSizeReduceLig,
+				it->size(),
+				_resources.lig,
+				d_dof.get(0),
+				d_defoLig.getX(), 	d_defoLig.getY(), d_defoLig.getZ(),
+				d_potLig.getX(), 	d_potLig.getY(), d_potLig.getZ(),
+				d_potLig.getW(),
+				d_resLig.get(0),
+				_stream);
+
+			cudaVerify(cudaMemcpyAsync( h_resRec.get(0), d_resRec.get(0), dofSizeRec*it->size()*sizeof(REAL),
+					cudaMemcpyDeviceToHost, _stream));
+			cudaVerify(cudaMemcpyAsync( h_resLig.get(0), d_resLig.get(0), dofSizeLig*it->size()*sizeof(REAL),
+					cudaMemcpyDeviceToHost, _stream));
+			cudaVerify(cudaStreamSynchronize(_stream));
+
 		it->setProcessed();
 	}
 

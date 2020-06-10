@@ -115,61 +115,17 @@ REAL getModeEngergy(
 
 #ifdef CUDA
 
-template <class T>
-void d_reduceMode(
-		const unsigned& threads,
-		const unsigned& blocks,
-		const unsigned& numAtomsRec,
-		const unsigned& numAtomsLig,
-		const unsigned& numModesRec,
-		const unsigned& numModesLig,
-		 DOF_6D_Modes<T>* dofs,
-		T* xPos, T* yPos, T* zPos,
-		T *xModesLig,T *yModesLig,T *zModesLig,
-		T *xModesRec,T *yModesRec,T *zModesRec,
-		T *d_fxRec, T *d_fyRec, T *d_fzRec,
-		T *d_fxLig, T *d_fyLig, T *d_fzLig,
-		T *d_E,
-		T *g_odata,
-		const cudaStream_t& stream);
-
-/* wrapper function to call the device kernel for the reduction */
-template<typename REAL>
+template<typename REAL,typename DOF_T,int PROTEINTYPE>
 void deviceReduce(
 		const unsigned& blockSize,
 		const unsigned& numDOFs,
-		const unsigned& receptorSize,
-		const unsigned& ligandSize,
-		const unsigned& numModesRec,
-		const unsigned& numModesLig,
-		DOF_6D_Modes<REAL>* dofs,
-		REAL *xModesRec,REAL *yModesRec,REAL *zModesRec,
-		REAL *xModesLig,REAL *yModesLig,REAL *zModesLig,
+		d_Protein<REAL>* protein,
+		DOF_T* dofs,
 		REAL* xPos, REAL* yPos, REAL* zPos,
-		REAL *d_fxRec, REAL *d_fyRec, REAL *d_fzRec,
-		REAL *d_fxLig, REAL *d_fyLig, REAL *d_fzLig,
+		REAL *d_fx, REAL *d_fy, REAL *d_fz,
 		REAL *d_E,
 		REAL *d_out,
-		const cudaStream_t& stream)
-{
-	/* we need at least twice the block size number of threads */
-	//const unsigned threads = (max(ligandSize, receptorSize) < blockSize*2) ? nextPow2((max(ligandSize, receptorSize) + 1)/ 2) : blockSize;
-	unsigned size = max(ligandSize, receptorSize);
-	const unsigned threads = (size < blockSize*2) ? nextPow2((size + 1)/ 2) : blockSize;
-	/* each structure is reduced by one thread block */
-	const unsigned blocks = numDOFs;
-	d_reduceMode(threads, blocks, receptorSize, ligandSize, numModesRec, numModesLig,
-			dofs,
-			xPos, yPos, zPos,
-			xModesRec, yModesRec, zModesRec,
-			xModesLig, yModesLig, zModesLig,
-			d_fxRec, d_fyRec, d_fzRec,
-			d_fxLig, d_fyLig, d_fzLig,
-			d_E,
-			d_out,
-			stream);
-}
-
+		const cudaStream_t& stream);
 /* remaining reduce part that is performed on the host */
 template<typename REAL, int PROTEINTYPE, bool MODES>
 void h_finalReduce(
