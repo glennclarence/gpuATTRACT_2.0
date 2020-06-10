@@ -38,18 +38,10 @@
 #include "reduction_modes.h"
 #include "macros.h"
 
-#include "ThreadSafeQueue.h"
-
 #include <iomanip>
 #include <limits>
 #include <mutex>
 
-//#define DEBUG
-#ifdef DEBUG
-#include <fstream>
-#include <string>
-#include "debug_functions.h"
-#endif
 
 namespace as {
 
@@ -159,7 +151,6 @@ public:
 		}
 	}
 
-
 	size_t getSharedMemSize(int const& id){
 		cudaDeviceProp deviceProp;
 		cudaVerify(cudaGetDeviceProperties(&deviceProp, id));
@@ -194,6 +185,17 @@ public:
 	void process_item( ) {
 		auto* const it = _resources.item;
 
+		cudaVerify(cudaMemcpyAsync(d_dof.get(0), it->inputBuffer(), it->size()*sizeof(dof_t), cudaMemcpyHostToDevice, _stream));
+
+		const unsigned numAtomsReceptor = it->size()*_resources.rec->numAtoms;
+		const unsigned numAtomsLigand = it->size()*_resources.lig->numAtoms;
+
+		assert( numAtomsReceptor <= d_trafoRec.bufferSize() );
+		assert( numAtomsLigand <= d_trafoLig.bufferSize() );
+
+		size_t gridSizeRec = ( numAtomsReceptor + BLSZ_TRAFO - 1) / BLSZ_TRAFO;
+		size_t gridSizeLig = ( numAtomsLigand + BLSZ_TRAFO - 1) / BLSZ_TRAFO;
+
 		it->setProcessed();
 	}
 
@@ -225,7 +227,6 @@ public:
 template<typename REAL>
 auto GPUEnergyService6DModes<REAL>::createDistributor() -> distributor_t {
 	distributor_t fncObj = [this] (common_t const* common, size_t numWorkers) {
-		//(void)numWorkers;
 		std::vector<id_t> ids = {common->gridIdRec, common->gridIdLig, common->ligId, common->recId, common->tableId};
 		auto id = this->_dataMng->getCommonDeviceIds(ids);
 		std::vector<as::workerId_t> vec(numWorkers);
@@ -246,9 +247,6 @@ auto GPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 
 		/* Set the device to work with */
 		cudaVerify(cudaSetDevice(deviceId));
-
-				/* reset the predicates for the actual iteration*/
-				//p->resetPrediacatesForIteration();
 		p->configureDevice();
 		if (item != nullptr) {
 
@@ -264,9 +262,6 @@ auto GPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 
 			p->addItemAndLigandSize(dI);
 			p->resizeBuffersIfRequired( itemSize, numAtomsRec, numAtomsLig, dofSizeRec, dofSizeLig);
-
-
-
 		} else {
 			return false;
 		}
