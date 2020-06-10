@@ -157,14 +157,14 @@ void Configurator_6D_Modes<SERVICE>::init(CmdArgs const& args) {
 		serviceType = ServiceType::GPUEnergyService6DModes;
 	}
 #endif
-
-	std::shared_ptr<service_t> service = std::move(std::static_pointer_cast<service_t>(ServiceFactory::create<real_t>(serviceType, dataManager, args)));
+    int const threads_per_device = 2;
+	std::shared_ptr<service_t> service = std::move(std::static_pointer_cast<service_t>(ServiceFactory::create<real_t>(serviceType, dataManager, args, threads_per_devices)));
 
 	this->_server = std::unique_ptr<server_t>(new server_t(service));
 	if (args.numCPUs > 0) {
 		this->_server->createWorkers(args.numCPUs);
 	} else {
-		this->_server->createWorkers(args.deviceIds.size());
+		this->_server->createWorkers(threads_per_device * args.deviceIds.size());
 	}
 
 }
