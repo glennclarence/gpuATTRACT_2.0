@@ -36,6 +36,7 @@
 #include "interpolation.h"
 #include "neighborlist_modes.h"
 #include "reduction_modes.h"
+#include "scoring_kernel.h"
 #include "macros.h"
 
 #include <iomanip>
@@ -195,6 +196,48 @@ public:
 
 		size_t gridSizeRec = ( numAtomsReceptor + BLSZ_TRAFO - 1) / BLSZ_TRAFO;
 		size_t gridSizeLig = ( numAtomsLigand + BLSZ_TRAFO - 1) / BLSZ_TRAFO;
+
+			d_score(
+				BLSZ_TRAFO,
+				gridSizeRec,
+				_stream,
+				_resources.gridLig.inner,
+				_resources.gridLig.outer,
+				*_resources.rec,
+				d_dof.get(0),
+				it->size(),
+				0,
+				d_defoRec.getX(),
+				d_defoRec.getY(),
+				d_defoRec.getZ(),
+				d_trafoRec.getX(),
+				d_trafoRec.getY(),
+				d_trafoRec.getZ(),
+				d_potRec.getX(),
+				d_potRec.getY(),
+				d_potRec.getZ(),
+				d_potRec.getW());
+
+			d_score(
+				BLSZ_TRAFO,
+				gridSizeLig,
+				_stream,
+				_resources.gridRec.inner,
+				_resources.gridRec.outer,
+				*_resources.lig,
+				d_dof.get(0),
+				it->size(),
+				1,
+				d_defoLig.getX(),
+				d_defoLig.getY(),
+				d_defoLig.getZ(),
+				d_trafoLig.getX(),
+				d_trafoLig.getY(),
+				d_trafoLig.getZ(),
+				d_potLig.getX(),
+				d_potLig.getY(),
+				d_potLig.getZ(),
+				d_potLig.getW());
 
 		it->setProcessed();
 	}
