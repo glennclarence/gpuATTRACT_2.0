@@ -239,6 +239,51 @@ public:
 				d_potLig.getZ(),
 				d_potLig.getW());
 
+
+			d_NLPotForce<REAL, dof_t>(
+				BLSZ_INTRPL,
+				gridSizeLig,
+				_stream,
+				_resources.gridRec.NL,
+				*_resources.rec,
+				*_resources.lig,
+				*_resources.table,
+				*_resources.simParam,
+				it->size(),
+				d_defoRec.getX(),
+				d_defoRec.getY(),
+				d_defoRec.getZ(),
+				d_trafoLig.getX(),
+				d_trafoLig.getY(),
+				d_trafoLig.getZ(),
+				d_potLig.getX(),
+				d_potLig.getY(),
+				d_potLig.getZ(),
+				d_potLig.getW()); 
+
+
+			d_NLPotForce<REAL, dof_t>(
+				BLSZ_INTRPL,
+				gridSizeRec,
+				_stream,
+				_resources.gridLig.NL,
+				*_resources.lig,
+				*_resources.rec,
+				*_resources.table,
+				*_resources.simParam,
+				it->size(),
+				d_defoLig.getX(),
+				d_defoLig.getY(),
+				d_defoLig.getZ(),
+				d_trafoRec.getX(),
+				d_trafoRec.getY(),
+				d_trafoRec.getZ(),
+				d_potRec.getX(),
+				d_potRec.getY(),
+				d_potRec.getZ(),
+				d_potRec.getW()
+				); 
+
 		it->setProcessed();
 	}
 

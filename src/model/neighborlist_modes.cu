@@ -23,7 +23,7 @@ namespace as {
  * which does not contain mode deformation.
  * Note that if the forces that are acting on the receptor are calculated, they have to be rotated back into the system of the receptor.
  */
-template<typename REAL>
+template<typename REAL, typename DOF_T>
 __global__ void d_NLPotForce(
 		const d_NLGrid<REAL> grid,
 		const d_Protein<REAL> rec,
@@ -46,8 +46,9 @@ __global__ void d_NLPotForce(
 	const unsigned i = blockDim.x * blockIdx.x + threadIdx.x;
 	const unsigned LigNumEl = lig.numAtoms;
 	if (i < LigNumEl*numDOFs) {
-
 		const unsigned LigAttrIdx = i % LigNumEl;
+		unsigned recBase = 0;
+
 
 		const unsigned atomTypeLig = lig.type[LigAttrIdx];
 
@@ -76,14 +77,29 @@ __global__ void d_NLPotForce(
 				for (unsigned j = 0; j < nDesc.x; ++j) {
 					const unsigned nIdx = grid.neighborList[nDesc.y + j];
 
+					REAL xRec, yRec, zRec;
+					if( std::is_same<DOF_T, DOF_6D_Modes<REAL>>::value ){
+						recBase = rec.numAtoms * (int) (i / LigNumEl);
+						xRec = RecPosX[nIdx + recBase];
+						yRec = RecPosY[nIdx + recBase];
+						zRec = RecPosZ[nIdx + recBase];
+					}
+					else{
+						xRec = rec.xPos[nIdx];
+						yRec = rec.yPos[nIdx];
+						zRec = rec.zPos[nIdx];
+					}
 
 
-					REAL dx = posLigX - RecPosX[nIdx];
-					REAL dy = posLigY - RecPosX[nIdx];
-					REAL dz = posLigZ - RecPosX[nIdx];
+					REAL dx = posLigX - xRec;
+					REAL dy = posLigY - yRec;
+					REAL dz = posLigZ - zRec;
+
 					const REAL dr2 = dx * dx + dy * dy + dz * dz;
 					const REAL dPlateau2 = grid.dPlateau2;
+
 					if ((dr2) > dPlateau2) {
+
 						continue;
 					}
 
@@ -142,10 +158,7 @@ __global__ void d_NLPotForce(
 
 						// calculate energy and potential/energy of charge potential
 
-						if (false) {
-							printf("%u %f %f %f %u\n" ,
-									i, posLigX, posLigY, posLigZ, atomTypeLig);
-						}
+
 
 						ChargePotForce(dr2_inv, dx, dy, dz,
 								chargeLigRec,
@@ -172,6 +185,7 @@ __global__ void d_NLPotForce(
 
 				/* store results back to global memory */
 				if (nDesc.x > 0) {
+
 					outLig_fx[i] += fAcc.x;
 					outLig_fy[i] += fAcc.y;
 					outLig_fz[i] += fAcc.z;
@@ -184,7 +198,8 @@ __global__ void d_NLPotForce(
 
 
 
-template<typename REAL>
+
+template<typename REAL, typename DOF_T>
 void d_NLPotForce(
 		unsigned blockSize,
 		unsigned gridSize,
@@ -207,7 +222,7 @@ void d_NLPotForce(
 		REAL* outLigand_E)
 {
 	cudaVerifyKernel((
-			d_NLPotForce<<<gridSize, blockSize, 0, stream>>> (
+			d_NLPotForce<REAL,DOF_T><<<gridSize, blockSize, 0, stream>>> (
 				grid,
 				rec,
 				lig,
@@ -229,7 +244,7 @@ void d_NLPotForce(
 }
 
 template
-void d_NLPotForce<float>(
+void d_NLPotForce<float, DOF_6D_Modes<float>>(
 		unsigned blockSize,
 		unsigned gridSize,
 		const cudaStream_t &stream,
@@ -252,7 +267,7 @@ void d_NLPotForce<float>(
 		);
 
 template
-void d_NLPotForce<double>(
+void d_NLPotForce<double, DOF_6D_Modes<double>>(
 		unsigned blockSize,
 		unsigned gridSize,
 		const cudaStream_t &stream,
@@ -274,6 +289,51 @@ void d_NLPotForce<double>(
 		double* outLigand_E
 		);
 
+template
+void d_NLPotForce<float, DOF_6D<float>>(
+		unsigned blockSize,
+		unsigned gridSize,
+		const cudaStream_t &stream,
+		const d_NLGrid<float>& grid,
+		const d_Protein<float>& rec,
+		const d_Protein<float>& lig,
+		const d_ParamTable<float>& table,
+		const SimParam<float>& simParam,
+		const unsigned& numDOFs,
+		const float* RecPosX,
+		const float* RecPosY,
+		const float* RecPosZ,
+		const float* LigPosX,
+		const float* LigPosY,
+		const float* LigPosZ,
+		float* outLig_fx,
+		float* outLig_fy,
+		float* outLig_fz,
+		float* outLigand_E
+		);
+
+template
+void d_NLPotForce<double, DOF_6D<double>>(
+		unsigned blockSize,
+		unsigned gridSize,
+		const cudaStream_t &stream,
+		const d_NLGrid<double>& grid,
+		const d_Protein<double>& rec,
+		const d_Protein<double>& lig,
+		const d_ParamTable<double>& table,
+		const SimParam<double>& simParam,
+		const unsigned& numDOFs,
+		const double* RecPosX,
+		const double* RecPosY,
+		const double* RecPosZ,
+		const double* LigPosX,
+		const double* LigPosY,
+		const double* LigPosZ,
+		double* outLig_fx,
+		double* outLig_fy,
+		double* outLig_fz,
+		double* outLigand_E
+		);
 
 }  // namespace as
 
