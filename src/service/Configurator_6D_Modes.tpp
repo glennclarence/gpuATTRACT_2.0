@@ -120,8 +120,10 @@ void Configurator_6D_Modes<SERVICE>::init(CmdArgs const& args) {
 	this->_ids.gridIdRec = dataManager->add(gridRec);
 	this->_ids.tableId = dataManager->add(paramTable);
 	this->_ids.paramsId = dataManager->add(simParam);
-
-
+    Common_Modes::setPivotRec(Vec3<double>(receptor->pivot().x,
+    receptor->pivot().y,receptor->pivot().z) , false);
+    Common_Modes::setPivotLig(Vec3<double>(ligand->pivot().x,
+    ligand->pivot().y,ligand->pivot().z) , false);
 
 
 

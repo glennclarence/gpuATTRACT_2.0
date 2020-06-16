@@ -10,11 +10,30 @@
 
 #include <ostream>
 #include <iomanip>
-
+#include <iostream>
 #include "Types_6D.h"
 
 namespace as {
 
+void Common::printDofHeader()
+{
+    std::cout << "#pivot 1 "<< " "<< pivotRec.x << " "<< pivotRec.y << " "<< pivotRec.z << std::endl;
+    std::cout << "#pivot 2 "<< " "<< pivotLig.x << " "<< pivotLig.y << " "<< pivotLig.z << std::endl;
+    std::cout << "#centered receptor: "<< centeredRec << std::endl;
+    std::cout << "#centered ligand: "<<  centeredLig << std::endl;
+}
+
+void Common::setPivotRec(Vec3<double> pivot, bool centered)
+{
+    pivotRec = pivot;
+    centeredRec = centered;
+}
+
+void Common::setPivotLig(Vec3<double> pivot, bool centered)
+{
+    pivotLig = pivot;
+    centeredLig = centered;
+}
 
 template<typename REAL>
 std::ostream& operator<<(std::ostream& outStream, DOF_6D<REAL> const& dof)
@@ -27,8 +46,9 @@ std::ostream& operator<<(std::ostream& outStream, DOF_6D<REAL> const& dof)
 
 	int w = 13;
     outStream 	<< setw(w) << 0 << setw(w) << 0 << setw(w) << 0 << setw(w) << 0 << setw(w) << 0 << setw(w) << 0 << setw(w) << std::endl;
-    outStream	<< setw(w) << dof.ang.x << setw(w) << dof.ang.y << setw(w) << dof.ang.z	<< setw(w) << dof.pos.x << setw(w) << dof.pos.y << setw(w) << dof.pos.z;
-
+    outStream   << setw(w) << dof.pos.x + Common::pivotRec.x - Common::pivotLig.x 
+                << setw(w) << dof.pos.y + Common::pivotRec.y - Common::pivotLig.y
+                << setw(w) << dof.pos.z + Common::pivotRec.z - Common::pivotLig.z;
 	outStream.precision(precisionSetting);
 	outStream.flags(flagSettings);
 
@@ -63,6 +83,14 @@ std::ostream& operator<<(std::ostream& s, Result_6D<REAL> const& enGrad) {
 	s.flags(flagSettings);
 
 	return s;
+}
+
+template<typename dof_t, typename result_t>
+void printResults(dof_t dof, result_t result, int index)
+{
+    std::cout << "#"<<index<< std::endl;
+    std::cout << "## Energy: "<<result.E<< std::endl;
+    std::cout << dof << std::endl;
 }
 
 } // namespace as

@@ -50,10 +50,13 @@ void emATTRACT<GenericTypes>::run() {
 
 
 	auto results = requestHandler.getResultEnGrads();
+	auto results_dof = requestHandler.getResultStates();
 
-	for (result_t const res : results) {
-		std::cout << res << std::endl;
-	}
+    Common::printDofHeader();
+    for(int i = 0; i< results.size() ; ++i)
+    {
+        printResults(results_dof[i], results[i], i + 1);
+    }
 
 }
 
