@@ -42,6 +42,10 @@ struct Common {
 	id_t recId;
 	id_t tableId;
 	id_t paramsId;
+    static Vec3<double> pivotRec;
+    static Vec3<double> pivotLig;
+    static bool centeredLig;
+    static bool centeredRec;
 };
 
 template<typename REAL>
