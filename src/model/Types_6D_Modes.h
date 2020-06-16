@@ -28,6 +28,7 @@ struct Result_6D_Modes;
 template<typename REAL>
 std::ostream& operator<< (std::ostream& s, Result_6D_Modes<REAL> const& args);
 
+
 #endif
 
 template<typename REAL>

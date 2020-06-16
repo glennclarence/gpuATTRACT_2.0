@@ -111,6 +111,10 @@ void Configurator_6D<SERVICE>::init(CmdArgs const& args) {
 	this->_ids.gridId = dataManager->add(gridRec);
 	this->_ids.tableId = dataManager->add(paramTable);
 	this->_ids.paramsId = dataManager->add(simParam);
+    Common::setPivotRec(Vec3<double>(receptor->pivot().x,
+    receptor->pivot().y,receptor->pivot().z) , false);
+    Common::setPivotLig(Vec3<double>(ligand->pivot().x,
+    ligand->pivot().y,ligand->pivot().z) , false);
 
 #ifdef CUDA
 	if (args.deviceIds.size() > 0) {

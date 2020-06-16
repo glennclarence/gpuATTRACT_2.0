@@ -27,6 +27,10 @@ struct Result_6D;
 template<typename REAL>
 std::ostream& operator<< (std::ostream& s, Result_6D<REAL> const& args);
 
+
+template<typename dof_t, typename result_t>
+void printResults(dof_t dof, result_t result, int index);
+
 #endif
 
 template<typename REAL>
@@ -51,6 +55,7 @@ struct Common {
     static void printDofHeader();
 
     static void setPivotRec(Vec3<double> pivot, bool use_centeredRec);
+    
     static void setPivotLig(Vec3<double> pivot, bool use_centeredLig);
 
 };

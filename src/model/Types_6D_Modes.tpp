@@ -12,8 +12,9 @@
 #include <iomanip>
 #include <sstream>
 #include "Types_6D_Modes.h"
-
+#include <iostream>
 namespace as {
+
 
 template<typename REAL>
 std::ostream& operator<<(std::ostream& outStream, DOF_6D_Modes<REAL> const& dof)
@@ -90,6 +91,13 @@ std::ostream& operator<<(std::ostream& s, Result_6D_Modes<REAL> const& enGrad) {
 	return s;
 }
 
+template<typename dof_t, typename result_t>
+void printResults(dof_t dof, result_t result, int index)
+{
+    std::cout << "#"<<index<< std::endl;
+    std::cout << "## Energy: "<<result._6D.E<< std::endl;
+    std::cout << dof << std::endl;
+}
 
 } // namespace as
 

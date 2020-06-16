@@ -15,7 +15,6 @@
 
 namespace as {
 
-
 void Common::printDofHeader()
 {
     std::cout << "#pivot 1 "<< " "<< pivotRec.x << " "<< pivotRec.y << " "<< pivotRec.z << std::endl;
@@ -84,6 +83,14 @@ std::ostream& operator<<(std::ostream& s, Result_6D<REAL> const& enGrad) {
 	s.flags(flagSettings);
 
 	return s;
+}
+
+template<typename dof_t, typename result_t>
+void printResults(dof_t dof, result_t result, int index)
+{
+    std::cout << "#"<<index<< std::endl;
+    std::cout << "## Energy: "<<result.E<< std::endl;
+    std::cout << dof << std::endl;
 }
 
 } // namespace as
