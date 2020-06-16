@@ -34,7 +34,9 @@ std::ostream& operator<<(std::ostream& outStream, DOF_6D_Modes<REAL> const& dof)
 				}
 
 	outStream   << std::endl << setw(w) << dof._6D.ang.x << setw(w) << dof._6D.ang.y << setw(w) << dof._6D.ang.z
-			    << setw(w) << dof._6D.pos.x << setw(w) << dof._6D.pos.y << setw(w) << dof._6D.pos.z;
+			                 << setw(w) << dof._6D.pos.x + Common_Modes::pivotRec.x - Common_Modes::pivotLig.x 
+                             << setw(w) << dof._6D.pos.y + Common_Modes::pivotRec.y - Common_Modes::pivotLig.y
+                             << setw(w) << dof._6D.pos.z + Common_Modes::pivotRec.z - Common_Modes::pivotLig.z;
 				for(int mode=0;mode<Common_Modes::numModesLig;mode++){
 					outStream<< setw(w) << dof.modesLig[mode];
 				}

@@ -47,8 +47,9 @@ std::ostream& operator<<(std::ostream& outStream, DOF_6D<REAL> const& dof)
 
 	int w = 13;
     outStream 	<< setw(w) << 0 << setw(w) << 0 << setw(w) << 0 << setw(w) << 0 << setw(w) << 0 << setw(w) << 0 << setw(w) << std::endl;
-    outStream	<< setw(w) << dof.ang.x << setw(w) << dof.ang.y << setw(w) << dof.ang.z	<< setw(w) << dof.pos.x << setw(w) << dof.pos.y << setw(w) << dof.pos.z;
-
+    outStream   << setw(w) << dof.pos.x + Common::pivotRec.x - Common::pivotLig.x 
+                << setw(w) << dof.pos.y + Common::pivotRec.y - Common::pivotLig.y
+                << setw(w) << dof.pos.z + Common::pivotRec.z - Common::pivotLig.z;
 	outStream.precision(precisionSetting);
 	outStream.flags(flagSettings);
 
