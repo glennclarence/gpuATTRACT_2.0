@@ -11,6 +11,7 @@
 #include "nativeTypesWrapper.h"
 #include "Vec3.h"
 #include "GenericTypes.h"
+#include <ostream>
 
 namespace as {
 #ifndef __CUDACC__ // ostream is not available in nvcc
@@ -44,9 +45,17 @@ struct Common {
 	id_t paramsId;
     static Vec3<double> pivotRec;
     static Vec3<double> pivotLig;
-    static bool centeredLig;
     static bool centeredRec;
+    static bool centeredLig;
+
+    static void printDofHeader();
+
+    static void setPivotRec(Vec3<double> pivot, bool use_centeredRec);
+    static void setPivotLig(Vec3<double> pivot, bool use_centeredLig);
+
 };
+
+
 
 template<typename REAL>
 struct Result_6D {

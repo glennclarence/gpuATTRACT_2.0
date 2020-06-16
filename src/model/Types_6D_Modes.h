@@ -40,19 +40,19 @@ struct DOF_6D_Modes {
 
 };
 
-struct Common_Modes {
+struct Common_Modes : public Common{
 	id_t gridIdRec;
 	id_t gridIdLig;
-	id_t ligId;
-	id_t recId;
-	id_t tableId;
-	id_t paramsId;
+	// id_t ligId;
+	// id_t recId;
+	// id_t tableId;
+	// id_t paramsId;
 	static unsigned int numModesRec;
 	static unsigned int numModesLig;
-    static Vec3<double> pivotRec;
-    static Vec3<double> pivotLig;
-    static bool centeredLig;
-    static bool centeredRec;
+    // static Vec3<double> pivotRec;
+    // static Vec3<double> pivotLig;
+    // static bool centeredLig;
+    // static bool centeredRec;
 };
 
 template<typename REAL>

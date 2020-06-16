@@ -10,11 +10,31 @@
 
 #include <ostream>
 #include <iomanip>
-
+#include <iostream>
 #include "Types_6D.h"
 
 namespace as {
 
+
+void Common::printDofHeader()
+{
+    std::cout << "#pivot 1 "<< " "<< pivotRec.x << " "<< pivotRec.y << " "<< pivotRec.z << std::endl;
+    std::cout << "#pivot 2 "<< " "<< pivotLig.x << " "<< pivotLig.y << " "<< pivotLig.z << std::endl;
+    std::cout << "#centered receptor: "<< centeredRec << std::endl;
+    std::cout << "#centered ligand: "<<  centeredLig << std::endl;
+}
+
+void Common::setPivotRec(Vec3<double> pivot, bool centered)
+{
+    pivotRec = pivot;
+    centeredRec = centered;
+}
+
+void Common::setPivotLig(Vec3<double> pivot, bool centered)
+{
+    pivotLig = pivot;
+    centeredLig = centered;
+}
 
 template<typename REAL>
 std::ostream& operator<<(std::ostream& outStream, DOF_6D<REAL> const& dof)
