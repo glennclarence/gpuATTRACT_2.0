@@ -36,6 +36,14 @@ void Configurator_6D_Modes<SERVICE>::init(CmdArgs const& args) {
 	auto paramTable = createParamTableFromFile<real_t>(args.paramsName);
 	auto gridRec = createGridFromGridFile<real_t>(args.gridRecName);
 
+
+	receptor->setNumModes(args.numModesRec);
+	ligand->setNumModes(args.numModesLig);
+
+
+	readHMMode<real_t>(receptor, args.recModesName);
+	readHMMode<real_t>(ligand, args.ligModesName);
+    
 	auto simParam = std::make_shared<SimParam<real_t>>();
 	if (args.dielec == "variable") {
 		simParam->dielec = Dielec::variable;
@@ -115,13 +123,7 @@ void Configurator_6D_Modes<SERVICE>::init(CmdArgs const& args) {
 
 
 
-	receptor->setNumModes(args.numModesRec);
-	ligand->setNumModes(args.numModesLig);
-	Common_Modes::numModesLig = args.numModesLig;
-	Common_Modes::numModesRec = args.numModesRec;
 
-	readHMMode<real_t>(receptor, args.recModesName);
-	readHMMode<real_t>(ligand, args.ligModesName);
 
     receptor->scaleModeStiffness(args.mode_stiffness);
 	ligand->scaleModeStiffness(args.mode_stiffness);
